@@ -72,10 +72,12 @@ mediaRouter.get('/avatar/:userId', optionalAuth, async (req, res, next) => {
       return;
     }
 
-    const signed = await getPrivateSignedUrl(targetUser.avatarKey);
-    if (signed) {
-      res.redirect(signed);
-      return;
+    if (req.query.mode === 'redirect') {
+      const signed = await getPrivateSignedUrl(targetUser.avatarKey);
+      if (signed) {
+        res.redirect(signed);
+        return;
+      }
     }
 
     const obj = await getObjectStream(targetUser.avatarKey);
@@ -134,10 +136,12 @@ mediaRouter.get('/evidence/:submissionId', optionalAuth, async (req, res, next) 
       return;
     }
 
-    const signed = await getPrivateSignedUrl(key);
-    if (signed) {
-      res.redirect(signed);
-      return;
+    if (req.query.mode === 'redirect') {
+      const signed = await getPrivateSignedUrl(key);
+      if (signed) {
+        res.redirect(signed);
+        return;
+      }
     }
 
     const obj = await getObjectStream(key);
