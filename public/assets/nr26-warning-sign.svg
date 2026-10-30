@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 280" fill="none">
+  <rect width="480" height="280" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2"/>
+  <rect x="20" y="20" width="440" height="240" rx="6" fill="#FFB800" stroke="#111827" stroke-width="6"/>
+  <path d="M240 54L332 210H148L240 54Z" fill="#FFB800" stroke="#111827" stroke-width="14" stroke-linejoin="round"/>
+  <rect x="232" y="108" width="16" height="52" rx="4" fill="#111827"/>
+  <circle cx="240" cy="182" r="10" fill="#111827"/>
+  <rect x="80" y="224" width="320" height="26" rx="3" fill="#111827"/>
+  <text x="240" y="242" text-anchor="middle" fill="#FFB800" font-family="Arial, sans-serif" font-weight="bold" font-size="14" letter-spacing="2">SINALIZAÇÃO PREVENTIVA NR-26</text>
+</svg>

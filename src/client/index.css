@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --senai-blue: #0047b6;
+    --senai-blue-dark: #002b5c;
+    --senai-blue-hover: #003894;
+    --safety-yellow: #ffb800;
+    --safety-green: #15803d;
+    --safety-red: #dc2626;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #f4f6f9;
+    color: #0f172a;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: 'Barlow', 'Inter', sans-serif;
+  }
+
+  .font-condensed {
+    font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  }
+
+  .font-mono-tech {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Faixa sutil de sinalização preventiva NR-26 (Amarelo Segurança e Preto Industrial) */
+.safety-hazard-bar {
+  background: repeating-linear-gradient(
+    -45deg,
+    #ffb800,
+    #ffb800 12px,
+    #111827 12px,
+    #111827 24px
+  );
+}
+
+/* Grade técnica industrial sutil para cabeçalhos institucionais */
+.senai-blueprint-grid {
+  background-color: #003380;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

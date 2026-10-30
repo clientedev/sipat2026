@@ -1,0 +1,20 @@
+{
+  "name": "SIPAT 2026 – Escola SENAI \"Morvan Figueiredo\"",
+  "short_name": "SIPAT 2026",
+  "description": "Segurança começa com você: prevenir é uma atitude de todos! Sua atitude faz a diferença!",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#002B5C",
+  "theme_color": "#0047B6",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
