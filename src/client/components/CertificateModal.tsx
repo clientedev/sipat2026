@@ -320,3 +320,4 @@ export const CertificateModal: React.FC<CertificateModalProps> = ({ data, onClos
     </div>
   );
 };
+

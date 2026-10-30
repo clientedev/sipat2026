@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Award,
   BarChart3,
+  BookOpen,
   Calendar,
   Camera,
   CheckCircle2,
@@ -383,6 +384,17 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-4 font-semibold">
+            <a
+              href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors"
+              title="Baixar Manual Oficial em PDF com prints do sistema"
+            >
+              <BookOpen size={14} className="text-[#E30613]" />
+              <span>Manual em PDF</span>
+            </a>
+            <span className="text-slate-600">|</span>
             <button
               type="button"
               onClick={handleOpenCertificate}
@@ -997,6 +1009,26 @@ export const LandingPage: React.FC = () => {
                 <span>Emitir / Visualizar Certificado</span>
               </button>
             </div>
+          </div>
+
+          {/* Widget Manual Oficial com Prints em PDF */}
+          <div className="bg-gradient-to-br from-red-50 to-slate-50 border border-red-200 rounded-xl p-4.5 space-y-2.5 shadow-xs">
+            <div className="flex items-center gap-2">
+              <BookOpen size={18} className="text-[#E30613]" />
+              <h4 className="font-extrabold text-sm text-[#1E293B]">Manual Oficial (PDF)</h4>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Guia completo ilustrado com <strong>prints reais de todas as telas</strong> para alunos, docentes e avaliadores da CIPA.
+            </p>
+            <a
+              href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 bg-[#1E293B] hover:bg-slate-900 text-white font-bold py-2.5 px-3 rounded-lg text-xs transition-colors shadow-xs"
+            >
+              <BookOpen size={15} className="text-[#E30613]" />
+              <span>Baixar Manual em PDF</span>
+            </a>
           </div>
 
           {/* Widget 2: Mini-Podium do Ranking ao Vivo */}

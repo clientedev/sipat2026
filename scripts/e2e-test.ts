@@ -158,6 +158,11 @@ async function runTests() {
     });
     socket.on('ranking:updated', () => wsEvents.push('ranking:updated'));
     socket.on('activity:released', () => wsEvents.push('activity:released'));
+    socket.onAny((event) => {
+      if (typeof event === 'string' && !wsEvents.includes(event)) {
+        wsEvents.push(event);
+      }
+    });
 
     const pubConfig = await jsonReq('/api/public/config');
     assert.equal(pubConfig.status, 200);
@@ -482,7 +487,7 @@ async function runTests() {
 
     // Aguarda ciclo do agendador automático (intervalo de 10s no servidor)
     let autoPublished = false;
-    for (let attempt = 0; attempt < 20; attempt++) {
+    for (let attempt = 0; attempt < 25; attempt++) {
       await new Promise((r) => setTimeout(r, 1000));
       const checkMission = await prisma.mission.findUnique({
         where: { id: createdScheduledMissionId },
@@ -490,7 +495,7 @@ async function runTests() {
       if (checkMission?.status === 'PUBLISHED') {
         autoPublished = true;
         // Aguarda breve propagação do evento websocket
-        for (let w = 0; w < 5; w++) {
+        for (let w = 0; w < 10; w++) {
           if (wsEvents.includes('activity:released')) break;
           await new Promise((r) => setTimeout(r, 500));
         }

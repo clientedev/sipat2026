@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Activity,
   BarChart3,
+  BookOpen,
   CheckSquare,
   ClipboardList,
   Copy,
@@ -118,6 +119,16 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2.5">
+            <a
+              href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-bold px-3 py-1.5 rounded transition-colors shadow-xs"
+              title="Baixar Manual Oficial em PDF com prints do sistema"
+            >
+              <BookOpen size={14} />
+              <span>Manual PDF</span>
+            </a>
             <Link
               to="/ranking"
               target="_blank"

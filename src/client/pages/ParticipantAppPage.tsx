@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Award,
   Bell,
+  BookOpen,
   Camera,
   CheckCircle2,
   ClipboardCheck,
@@ -319,6 +320,16 @@ export const ParticipantAppPage: React.FC = () => {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <a
+              href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-xs px-3 py-1.5 rounded transition-colors shadow-2xs"
+              title="Baixar Manual do Aluno em PDF com prints do sistema"
+            >
+              <BookOpen size={14} />
+              <span>Manual PDF</span>
+            </a>
             <button
               type="button"
               onClick={handleOpenCertificate}
