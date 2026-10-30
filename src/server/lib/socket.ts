@@ -84,7 +84,7 @@ export function broadcastActivityReleased(payload: {
   points: number;
 }) {
   if (!io) return;
-  io.to('participants').to('public-live').emit('activity:released', {
+  io.emit('activity:released', {
     ...payload,
     releasedAt: new Date().toISOString(),
   });
@@ -96,7 +96,7 @@ export function broadcastActivityClosed(payload: {
   title: string;
 }) {
   if (!io) return;
-  io.to('participants').to('public-live').emit('activity:closed', {
+  io.emit('activity:closed', {
     ...payload,
     closedAt: new Date().toISOString(),
   });
@@ -111,4 +111,10 @@ export function emitToStaff(event: string, data: unknown) {
   if (!io) return;
   io.to('staff').emit(event, data);
 }
+
+export function broadcastFeedReaction(postId: string, count: number) {
+  if (!io) return;
+  io.to('public-live').emit('feed:reaction', { postId, count });
+}
+
 

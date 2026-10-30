@@ -750,6 +750,123 @@ participantRouter.post('/notifications/read-all', async (req, res, next) => {
   }
 });
 
+/**
+ * Emissão de Certificado Oficial da SIPAT 2026 – Escola SENAI "Morvan Figueiredo"
+ * Com validação digital, carga horária de 20 horas e insígnias conquistadas
+ */
+participantRouter.get('/certificate', async (req, res, next) => {
+  try {
+    const userId = req.authUser!.id;
+    const [user, config, totalParticipants, higherRankedCount] = await Promise.all([
+      prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        include: {
+          classGroup: true,
+          badges: {
+            include: { badge: true },
+            orderBy: { awardedAt: 'asc' },
+          },
+          submissions: {
+            where: { status: 'APPROVED' },
+            select: { id: true, awardedPoints: true, mission: { select: { title: true, category: true } } },
+          },
+          quizAttempts: {
+            where: { completedAt: { not: null } },
+            select: { id: true, scorePercent: true, awardedPoints: true },
+          },
+        },
+      }),
+      prisma.systemConfig.findUnique({ where: { id: 'default' } }),
+      prisma.user.count({ where: { role: Role.PARTICIPANT, isActive: true } }),
+      prisma.user.count({
+        where: {
+          role: Role.PARTICIPANT,
+          isActive: true,
+          totalPoints: {
+            gt:
+              (
+                await prisma.user.findUnique({
+                  where: { id: userId },
+                  select: { totalPoints: true },
+                })
+              )?.totalPoints || 0,
+          },
+        },
+      }),
+    ]);
+
+    const rankPosition = higherRankedCount + 1;
+    const levelInfo = calculateLevelInfo(user.totalPoints);
+    const hash = Buffer.from(`${user.id}:${user.createdAt.getTime()}`)
+      .toString('hex')
+      .slice(0, 8)
+      .toUpperCase();
+    const verificationCode = `SENAI-SIPAT2026-MF-${hash}`;
+
+    const approvedMissionsCount = user.submissions.length;
+    const completedQuizzesCount = user.quizAttempts.length;
+
+    res.json({
+      certificate: {
+        verificationCode,
+        hash: verificationCode,
+        studentName: user.fullName,
+        registrationCode: user.registrationCode || 'ALUNO-SENAI',
+        classGroup: user.classGroup
+          ? `[${user.classGroup.code}] ${user.classGroup.name}`
+          : 'Turma Técnica SENAI',
+        courseArea: user.classGroup?.courseArea || 'Formação Profissional Técnica',
+        schoolName: config?.schoolName || 'Escola SENAI "Morvan Figueiredo"',
+        unit: 'Escola SENAI "Morvan Figueiredo" — Mooca, São Paulo',
+        institution: 'Serviço Nacional de Aprendizagem Industrial - SENAI-SP',
+        eventTitle: 'SIPAT 2026',
+        eventTheme:
+          config?.eventTheme || 'Segurança começa com você: prevenir é uma atitude de todos!',
+        eventSlogan: config?.eventSlogan || 'Sua atitude faz a diferença!',
+        eventDates: '16 a 19 de novembro de 2026',
+        workloadHours: 20,
+        totalPoints: user.totalPoints,
+        rankPosition,
+        totalParticipants,
+        level: levelInfo.level,
+        levelTitle: levelInfo.title,
+        approvedMissionsCount,
+        completedQuizzesCount,
+        totalActivities: approvedMissionsCount + completedQuizzesCount,
+        badges: user.badges.map((b) => ({
+          slug: b.badge.slug,
+          name: b.badge.name,
+          description: b.badge.description,
+          iconName: b.badge.iconName,
+          accentColor: b.badge.accentColor,
+          awardedAt: b.awardedAt.toISOString(),
+        })),
+        signatures: [
+          {
+            title: 'Coordenação Geral da SIPAT 2026 / CIPA',
+            name: 'Prof. Coordenador de Segurança do Trabalho',
+            role: 'Presidente da CIPA - Gestão 2026',
+          },
+          {
+            title: 'Direção Escolar',
+            name: 'Direção da Escola SENAI "Morvan Figueiredo"',
+            role: 'Diretor de Unidade de Formação Profissional',
+          },
+        ],
+        issuedAt: new Date().toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        }),
+        verificationUrl: `https://www.sp.senai.br/unidade/mooca/sipat/validar?code=${verificationCode}`,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+
 const pushSubSchema = z.object({
   endpoint: z.string().url(),
   keys: z.object({
@@ -782,4 +899,5 @@ participantRouter.post('/push-subscribe', async (req, res, next) => {
     next(err);
   }
 });
+
 

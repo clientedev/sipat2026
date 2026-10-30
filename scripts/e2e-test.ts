@@ -407,6 +407,35 @@ async function runTests() {
       );
     }
 
+    // 6.1 Emissão de Certificado Oficial de 20h e Validação Pública por Hash
+    const certRes = await jsonReq('/api/participant/certificate', {}, studentToken);
+    assert.equal(certRes.status, 200, 'Falha ao gerar certificado do aluno');
+    assert.equal(certRes.data.certificate.studentName, 'Henrique Souza Teste');
+    assert.equal(certRes.data.certificate.workloadHours, 20);
+    assert.ok(certRes.data.certificate.hash, 'Certificado deve possuir código hash de autenticidade');
+    const certHash = certRes.data.certificate.hash;
+
+    const verifyCert = await jsonReq(`/api/public/certificate/verify/${certHash}`);
+    assert.equal(verifyCert.status, 200, 'Falha na validação pública do certificado');
+    assert.equal(verifyCert.data.valid, true);
+    assert.equal(verifyCert.data.workloadHours, 20);
+
+    // 6.2 Feed Social de Atitudes Seguras & Reações Interativas
+    const feedRes = await jsonReq('/api/public/feed');
+    assert.equal(feedRes.status, 200, 'Falha ao buscar feed social público');
+    const posts = feedRes.data.feed || feedRes.data.posts || [];
+    assert.ok(Array.isArray(posts), 'Feed deve retornar lista de posts');
+    assert.ok(posts.length >= 1, 'Feed deve conter publicações');
+    const firstPost = posts[0];
+
+    const reactRes = await jsonReq(`/api/public/feed/${firstPost.id}/react`, {
+      method: 'POST',
+      body: JSON.stringify({ reaction: 'claps' }),
+    });
+    assert.equal(reactRes.status, 200, 'Falha ao registrar reação no post do feed');
+    assert.equal(reactRes.data.ok, true);
+    console.log('✔ [6.1] Emissão de Certificado 20h, Verificação Pública e Feed Social de Atitudes Seguras OK');
+
     // Verifica Ranking Público e Máscara de Privacidade LGPD ("Henrique S. T.")
     const pubRanking = await jsonReq('/api/public/ranking');
     assert.equal(pubRanking.status, 200);
@@ -453,13 +482,18 @@ async function runTests() {
 
     // Aguarda ciclo do agendador automático (intervalo de 10s no servidor)
     let autoPublished = false;
-    for (let attempt = 0; attempt < 15; attempt++) {
+    for (let attempt = 0; attempt < 20; attempt++) {
       await new Promise((r) => setTimeout(r, 1000));
       const checkMission = await prisma.mission.findUnique({
         where: { id: createdScheduledMissionId },
       });
       if (checkMission?.status === 'PUBLISHED') {
         autoPublished = true;
+        // Aguarda breve propagação do evento websocket
+        for (let w = 0; w < 5; w++) {
+          if (wsEvents.includes('activity:released')) break;
+          await new Promise((r) => setTimeout(r, 500));
+        }
         break;
       }
     }

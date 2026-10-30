@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { SIPAT_EVENT_DAYS, SIPAT_LEVELS } from '@shared/constants';
 import { BadgeIcon } from '../components/BadgeIcon';
+import { CertificateData, CertificateModal } from '../components/CertificateModal';
 import { InstitutionalBrand } from '../components/InstitutionalBrand';
 import {
   MissionSubmitModal,
@@ -127,6 +128,18 @@ export const ParticipantAppPage: React.FC = () => {
   const [liveToast, setLiveToast] = useState<string | null>(null);
   const [deferredPwaPrompt, setDeferredPwaPrompt] = useState<any>(null);
   const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [showCertificate, setShowCertificate] = useState(false);
+  const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
+
+  const handleOpenCertificate = async () => {
+    try {
+      const res = await apiFetch<{ certificate: CertificateData }>('/api/participant/certificate');
+      setCertificateData(res.certificate);
+      setShowCertificate(true);
+    } catch {
+      alert('Não foi possível gerar o certificado neste momento.');
+    }
+  };
 
   const loadDashboard = useCallback(async () => {
     try {
@@ -306,6 +319,14 @@ export const ParticipantAppPage: React.FC = () => {
           </Link>
 
           <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              onClick={handleOpenCertificate}
+              className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded cursor-pointer transition-colors shadow-2xs"
+            >
+              <Award size={14} />
+              <span>Certificado 20h</span>
+            </button>
             {deferredPwaPrompt && (
               <button
                 type="button"
@@ -929,6 +950,13 @@ export const ParticipantAppPage: React.FC = () => {
           quizId={activeQuizId}
           onClose={() => setActiveQuizId(null)}
           onCompleted={() => void loadDashboard()}
+        />
+      )}
+
+      {showCertificate && certificateData && (
+        <CertificateModal
+          data={certificateData}
+          onClose={() => setShowCertificate(false)}
         />
       )}
     </div>
