@@ -1,0 +1,417 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  EVALUATOR
+  PARTICIPANT
+}
+
+enum NamePrivacyMode {
+  FULL_NAME
+  FIRST_LAST_INITIAL
+  INITIALS_ONLY
+}
+
+enum MissionDifficulty {
+  SIMPLE
+  INTERMEDIATE
+  ADVANCED
+  SURPRISE
+}
+
+enum ParticipationMode {
+  INDIVIDUAL
+  TEAM
+}
+
+enum SubmissionType {
+  PHOTO
+  VIDEO
+  TEXT
+  MULTIPLE_CHOICE
+  RISK_HUNT
+  SEVEN_ERRORS
+  MIXED
+}
+
+enum ActivityStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  CLOSED
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_CORRECTION
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  IMAGE_IDENTIFICATION
+  PROBLEM_SITUATION
+}
+
+enum PointSourceType {
+  MISSION
+  QUIZ
+  MANUAL_ADJUSTMENT
+  BADGE_BONUS
+}
+
+enum NotificationType {
+  MISSION_OPENED
+  QUIZ_OPENED
+  SUBMISSION_REVIEWED
+  POINTS_EARNED
+  BADGE_UNLOCKED
+  DEADLINE_SOON
+  SYSTEM
+}
+
+model SystemConfig {
+  id                    String          @id @default("default")
+  schoolName            String          @default("Escola SENAI \"Morvan Figueiredo\"")
+  eventTitle            String          @default("SIPAT 2026")
+  eventTheme            String          @default("Segurança começa com você: prevenir é uma atitude de todos!")
+  eventSlogan           String          @default("Sua atitude faz a diferença!")
+  eventStartDate        DateTime        @default("2026-11-16T11:00:00.000Z")
+  eventEndDate          DateTime        @default("2026-11-20T01:00:00.000Z")
+  officialLogoUrl       String?
+  namePrivacyMode       NamePrivacyMode @default(FIRST_LAST_INITIAL)
+  showAvatarsInPublic   Boolean         @default(false)
+  pointsSimpleMission   Int             @default(20)
+  pointsMediumMission   Int             @default(50)
+  pointsAdvancedMission Int             @default(100)
+  pointsMaxQuiz         Int             @default(50)
+  pointsSurpriseMax     Int             @default(30)
+  registrationEnabled   Boolean         @default(true)
+  registrationStart     DateTime?
+  registrationEnd       DateTime?
+  tvRotationSeconds     Int             @default(14)
+  lgpdRetentionDays     Int             @default(90)
+  updatedAt             DateTime        @updatedAt
+}
+
+model QrRegistrationToken {
+  id                 String    @id @default(uuid())
+  code               String    @unique
+  label              String
+  isActive           Boolean   @default(true)
+  validFrom          DateTime?
+  validUntil         DateTime?
+  scansCount         Int       @default(0)
+  registrationsCount Int       @default(0)
+  createdById        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  registeredUsers User[]
+}
+
+model ClassGroup {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  name       String
+  courseArea String
+  shift      String
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  users       User[]
+  submissions MissionSubmission[]
+
+  @@index([isActive])
+}
+
+model User {
+  id                   String               @id @default(uuid())
+  fullName             String
+  email                String               @unique
+  registrationCode     String?              @unique
+  passwordHash         String
+  role                 Role                 @default(PARTICIPANT)
+  classGroupId         String?
+  classGroup           ClassGroup?          @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  avatarKey            String?
+  avatarMime           String?
+  isMinor              Boolean              @default(false)
+  guardianName         String?
+  lgpdConsentAt        DateTime?
+  imageConsent         Boolean              @default(false)
+  imageConsentAt       DateTime?
+  totalPoints          Int                  @default(0)
+  level                Int                  @default(1)
+  isActive             Boolean              @default(true)
+  anonymizedAt         DateTime?
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  registeredViaQrId    String?
+  registeredViaQr      QrRegistrationToken? @relation(fields: [registeredViaQrId], references: [id], onDelete: SetNull)
+  lastLoginAt          DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  submissions          MissionSubmission[]  @relation("ParticipantSubmissions")
+  evaluatedSubmissions MissionSubmission[]  @relation("EvaluatorSubmissions")
+  quizAttempts         QuizAttempt[]
+  badges               UserBadge[]          @relation("ParticipantBadges")
+  awardedBadges        UserBadge[]          @relation("BadgeAwarder")
+  pointLedger          PointLedger[]        @relation("ParticipantPoints")
+  actedPoints          PointLedger[]        @relation("ActorPoints")
+  notifications        Notification[]
+  pushSubscriptions    PushSubscription[]
+  actorAuditLogs       AuditLog[]           @relation("AuditActor")
+  targetAuditLogs      AuditLog[]           @relation("AuditTarget")
+
+  @@index([role, isActive, totalPoints(sort: Desc)])
+  @@index([classGroupId])
+}
+
+model Mission {
+  id                 String            @id @default(uuid())
+  slug               String            @unique
+  title              String
+  summary            String
+  description        String
+  instructions       String
+  evaluationCriteria String
+  safetyNotice       String?
+  bannerUrl          String?
+  category           String
+  difficulty         MissionDifficulty @default(INTERMEDIATE)
+  participationMode  ParticipationMode @default(INDIVIDUAL)
+  submissionType     SubmissionType    @default(PHOTO)
+  eventDay           Int               @default(1)
+  eventDateLabel     String            @default("16/11/2026")
+  status             ActivityStatus    @default(DRAFT)
+  opensAt            DateTime?
+  closesAt           DateTime?
+  publishedAt        DateTime?
+  points             Int               @default(50)
+  requiresPhoto      Boolean           @default(false)
+  requiresVideo      Boolean           @default(false)
+  requiresText       Boolean           @default(true)
+  requiresApproval   Boolean           @default(true)
+  isFeatured         Boolean           @default(false)
+  configJson         Json?
+  sortOrder          Int               @default(0)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  submissions MissionSubmission[]
+
+  @@index([status, eventDay, sortOrder])
+  @@index([status, opensAt])
+  @@index([status, closesAt])
+}
+
+model MissionSubmission {
+  id                 String           @id @default(uuid())
+  missionId          String
+  mission            Mission          @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  userId             String
+  user               User             @relation("ParticipantSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  classGroupId       String?
+  classGroup         ClassGroup?      @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
+  teamName           String?
+  teamMembersText    String?
+  status             SubmissionStatus @default(PENDING)
+  textResponse       String?
+  structuredData     Json?
+  mediaKey           String?
+  mediaMime          String?
+  mediaSize          Int?
+  mediaOriginalName  String?
+  secondaryMediaKey  String?
+  secondaryMediaMime String?
+  isPublicHighlight  Boolean          @default(false)
+  awardedPoints      Int              @default(0)
+  feedback           String?
+  evaluatedById      String?
+  evaluatedBy        User?            @relation("EvaluatorSubmissions", fields: [evaluatedById], references: [id], onDelete: SetNull)
+  evaluatedAt        DateTime?
+  submittedAt        DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  @@unique([missionId, userId])
+  @@index([status, submittedAt(sort: Desc)])
+  @@index([userId])
+  @@index([missionId])
+}
+
+model Quiz {
+  id               String         @id @default(uuid())
+  slug             String         @unique
+  title            String
+  description      String
+  category         String
+  eventDay         Int            @default(1)
+  eventDateLabel   String         @default("16/11/2026")
+  status           ActivityStatus @default(DRAFT)
+  opensAt          DateTime?
+  closesAt         DateTime?
+  publishedAt      DateTime?
+  durationSeconds  Int            @default(600)
+  maxPoints        Int            @default(50)
+  maxAttempts      Int            @default(1)
+  shuffleQuestions Boolean        @default(false)
+  sortOrder        Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@index([status, eventDay, sortOrder])
+  @@index([status, opensAt])
+  @@index([status, closesAt])
+}
+
+model QuizQuestion {
+  id              String       @id @default(uuid())
+  quizId          String
+  quiz            Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionType    QuestionType @default(MULTIPLE_CHOICE)
+  courseTrack     String       @default("GERAL")
+  prompt          String
+  scenarioContext String?
+  imageUrl        String?
+  options         Json
+  correctOptionId String
+  explanation     String
+  pointsWeight    Int          @default(10)
+  sortOrder       Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([quizId, sortOrder])
+}
+
+model QuizAttempt {
+  id             String    @id @default(uuid())
+  quizId         String
+  quiz           Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attemptNumber  Int       @default(1)
+  answersJson    Json
+  correctCount   Int       @default(0)
+  totalQuestions Int       @default(0)
+  scorePercent   Float     @default(0)
+  awardedPoints  Int       @default(0)
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+
+  @@unique([quizId, userId, attemptNumber])
+  @@index([userId])
+  @@index([quizId])
+}
+
+model Badge {
+  id                String   @id @default(uuid())
+  slug              String   @unique
+  name              String
+  description       String
+  iconName          String
+  accentColor       String   @default("#0047B6")
+  criteriaType      String
+  criteriaThreshold Int      @default(1)
+  bonusPoints       Int      @default(0)
+  sortOrder         Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  userBadges UserBadge[]
+}
+
+model UserBadge {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation("ParticipantBadges", fields: [userId], references: [id], onDelete: Cascade)
+  badgeId     String
+  badge       Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  awardedById String?
+  awardedBy   User?    @relation("BadgeAwarder", fields: [awardedById], references: [id], onDelete: SetNull)
+  reason      String?
+  awardedAt   DateTime @default(now())
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+}
+
+model PointLedger {
+  id           String          @id @default(uuid())
+  userId       String
+  user         User            @relation("ParticipantPoints", fields: [userId], references: [id], onDelete: Cascade)
+  delta        Int
+  balanceAfter Int
+  sourceType   PointSourceType
+  sourceId     String?
+  reason       String
+  actorId      String?
+  actor        User?           @relation("ActorPoints", fields: [actorId], references: [id], onDelete: SetNull)
+  createdAt    DateTime        @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([sourceType, sourceId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType @default(SYSTEM)
+  title     String
+  message   String
+  linkUrl   String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id           String   @id @default(uuid())
+  actorId      String?
+  actor        User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorRole    String?
+  targetUserId String?
+  targetUser   User?    @relation("AuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+  action       String
+  entityType   String
+  entityId     String?
+  reason       String?
+  metadata     Json?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([entityType, entityId])
+  @@index([targetUserId])
+}
