@@ -171,7 +171,7 @@ export const PublicRankingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0B1528] text-white flex flex-col">
       {/* Topo Institucional de Alto Contraste para Telões e Projetores */}
-      <header className="bg-[#003380] border-b-4 border-[#FFB800]">
+      <header className="bg-[#1E293B] border-b-4 border-[#E30613] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <InstitutionalBrand
             officialLogoUrl={data?.officialLogoUrl ? '/api/media/brand' : null}
@@ -286,7 +286,7 @@ export const PublicRankingPage: React.FC = () => {
               onClick={() => setActiveSlide(tab.id as TvSlide)}
               className={`px-4 py-2 rounded text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
                 activeSlide === tab.id
-                  ? 'bg-[#0047B6] text-white border border-blue-400/40'
+                  ? 'bg-[#E30613] text-white border border-red-500 shadow-sm'
                   : 'text-slate-300 hover:text-white'
               }`}
             >
@@ -604,3 +604,4 @@ export const PublicRankingPage: React.FC = () => {
     </div>
   );
 };
+

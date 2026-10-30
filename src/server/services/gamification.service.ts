@@ -256,3 +256,4 @@ export async function evaluateAndGrantBadges(userId: string) {
 
   return newlyUnlocked;
 }
+

@@ -150,3 +150,4 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth deve ser utilizado dentro de AuthProvider');
   return ctx;
 }
+

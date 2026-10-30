@@ -538,3 +538,4 @@ authRouter.delete('/lgpd-account', requireAuth, async (req, res, next) => {
     next(err);
   }
 });
+

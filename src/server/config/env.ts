@@ -57,3 +57,4 @@ export const env = {
   maxImageBytes: data.MAX_IMAGE_SIZE_MB * 1024 * 1024,
   maxVideoBytes: data.MAX_VIDEO_SIZE_MB * 1024 * 1024,
 };
+

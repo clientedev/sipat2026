@@ -209,7 +209,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
               type="button"
               onClick={() => setView(t.id as any)}
               className={`px-4 py-2 rounded text-xs font-bold uppercase cursor-pointer ${
-                view === t.id ? 'bg-[#0047B6] text-white' : 'bg-slate-100 text-slate-700'
+                view === t.id ? 'bg-[#E30613] text-white' : 'bg-slate-100 text-slate-700'
               }`}
             >
               {t.label}
@@ -219,12 +219,12 @@ export const AdminParticipantsQrTab: React.FC = () => {
       </div>
 
       {msg && (
-        <div className="bg-blue-50 border border-blue-200 border-l-4 border-l-[#0047B6] p-3 rounded text-xs text-slate-900 flex items-center justify-between">
+        <div className="bg-blue-50 border border-blue-200 border-l-4 border-l-[#E30613] p-3 rounded text-xs text-slate-900 flex items-center justify-between">
           <span>{msg}</span>
           <button
             type="button"
             onClick={() => setMsg(null)}
-            className="font-bold text-[#0047B6] cursor-pointer"
+            className="font-bold text-[#E30613] cursor-pointer"
           >
             Fechar
           </button>
@@ -234,12 +234,12 @@ export const AdminParticipantsQrTab: React.FC = () => {
       {view === 'qr' && qrData && (
         <div className="grid lg:grid-cols-12 gap-6">
           <div className="lg:col-span-5 bg-white border border-slate-200 rounded-md p-6 flex flex-col items-center text-center">
-            <div className="flex items-center gap-2 text-xs font-mono-tech uppercase text-[#0047B6] font-bold mb-3">
+            <div className="flex items-center gap-2 text-xs font-mono-tech uppercase text-[#E30613] font-bold mb-3">
               <QrCode size={16} />
               <span>CÓDIGO ATUAL: {qrData.currentQr?.code}</span>
             </div>
 
-            <div className="p-4 border-2 border-[#0047B6] rounded-md bg-white">
+            <div className="p-4 border-2 border-[#E30613] rounded-md bg-white">
               <img
                 src={qrData.qrDataUrl}
                 alt="QR Code Oficial SIPAT 2026"
@@ -261,7 +261,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
                     `qrcode-sipat2026-${qrData.currentQr?.code}.png`
                   )
                 }
-                className="inline-flex items-center justify-center gap-1.5 bg-[#0047B6] hover:bg-[#003894] text-white text-xs font-bold py-2.5 px-3 rounded cursor-pointer"
+                className="inline-flex items-center justify-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-bold py-2.5 px-3 rounded cursor-pointer"
               >
                 <Download size={14} />
                 <span>Baixar PNG</span>
@@ -355,7 +355,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="bg-[#0047B6] text-white font-bold px-4 py-2 rounded cursor-pointer"
+                className="bg-[#E30613] text-white font-bold px-4 py-2 rounded cursor-pointer"
               >
                 Salvar Período de Inscrição
               </button>
@@ -437,7 +437,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowManualModal(true)}
-                className="inline-flex items-center gap-1.5 bg-[#0047B6] hover:bg-[#003894] text-white font-bold px-3.5 py-2 rounded cursor-pointer"
+                className="inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold px-3.5 py-2 rounded cursor-pointer"
               >
                 <Plus size={14} />
                 <span>Cadastro Manual</span>
@@ -478,7 +478,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
                     <td className="py-3 px-4 font-mono-tech">
                       {p.submissionsCount} missões • {p.quizAttemptsCount} quizzes
                     </td>
-                    <td className="py-3 px-4 font-mono-tech font-bold text-[#0047B6]">
+                    <td className="py-3 px-4 font-mono-tech font-bold text-[#E30613]">
                       {p.totalPoints} pts
                     </td>
                     <td className="py-3 px-4 text-right">
@@ -518,7 +518,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
               <tbody className="divide-y divide-slate-200">
                 {classes.map((c) => (
                   <tr key={c.id}>
-                    <td className="py-3 px-4 font-mono-tech font-bold text-[#0047B6]">{c.code}</td>
+                    <td className="py-3 px-4 font-mono-tech font-bold text-[#E30613]">{c.code}</td>
                     <td className="py-3 px-4">
                       <div className="font-bold text-slate-900">{c.name}</div>
                       <div className="text-slate-500">{c.courseArea}</div>
@@ -582,7 +582,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
             </div>
             <button
               type="submit"
-              className="w-full bg-[#0047B6] text-white font-bold py-2.5 rounded cursor-pointer"
+              className="w-full bg-[#E30613] text-white font-bold py-2.5 rounded cursor-pointer"
             >
               Salvar Turma
             </button>
@@ -649,7 +649,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-[#0047B6] text-white font-bold rounded cursor-pointer"
+                className="px-5 py-2 bg-[#E30613] text-white font-bold rounded cursor-pointer"
               >
                 Cadastrar
               </button>
@@ -708,7 +708,7 @@ export const AdminParticipantsQrTab: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-[#0047B6] text-white font-bold rounded cursor-pointer"
+                className="px-5 py-2 bg-[#E30613] text-white font-bold rounded cursor-pointer"
               >
                 Registrar e Auditar
               </button>
@@ -719,3 +719,4 @@ export const AdminParticipantsQrTab: React.FC = () => {
     </div>
   );
 };
+

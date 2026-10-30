@@ -100,7 +100,7 @@ export const AdminDashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F4F6F9] flex flex-col">
       {/* Cabeçalho Institucional Administrativo */}
-      <header className="bg-[#0F172A] text-white border-b-4 border-[#0047B6]">
+      <header className="bg-[#1E293B] text-white border-b-4 border-[#E30613] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link to="/">
@@ -111,7 +111,7 @@ export const AdminDashboardPage: React.FC = () => {
                 compact
               />
             </Link>
-            <span className="hidden md:inline-flex items-center gap-1.5 bg-[#0047B6] text-white text-[11px] font-mono-tech font-bold px-2.5 py-1 rounded">
+            <span className="hidden md:inline-flex items-center gap-1.5 bg-[#E30613] text-white text-[11px] font-mono-tech font-bold px-2.5 py-1 rounded">
               <Shield size={12} className="text-[#FFB800]" />
               <span>{user?.role}</span>
             </span>
@@ -151,7 +151,7 @@ export const AdminDashboardPage: React.FC = () => {
                 onClick={() => setActiveTab(item.id as any)}
                 className={`px-4 py-3 text-xs font-bold flex items-center gap-2 whitespace-nowrap border-b-3 transition-colors cursor-pointer ${
                   activeTab === item.id
-                    ? 'border-[#FFB800] text-white bg-white/5'
+                    ? 'border-[#E30613] text-[#E30613] bg-white/5'
                     : 'border-transparent text-slate-300 hover:text-white'
                 }`}
               >
@@ -178,17 +178,17 @@ export const AdminDashboardPage: React.FC = () => {
                 {
                   label: 'Inscritos',
                   value: dash.indicators.totalRegistered,
-                  accent: 'border-t-[#0047B6]',
+                  accent: 'border-t-[#E30613]',
                 },
                 {
                   label: 'Evidências Pendentes',
                   value: dash.indicators.pendingSubmissions,
-                  accent: 'border-t-[#FFB800]',
+                  accent: 'border-t-[#F59E0B]',
                 },
                 {
                   label: 'Missões Aprovadas',
                   value: dash.indicators.missionsCompleted,
-                  accent: 'border-t-[#15803D]',
+                  accent: 'border-t-[#10B981]',
                 },
                 {
                   label: 'Quizzes Respondidos',
@@ -203,7 +203,7 @@ export const AdminDashboardPage: React.FC = () => {
                 {
                   label: 'Pontuação Total',
                   value: dash.indicators.totalPointsAccumulated,
-                  accent: 'border-t-[#0047B6]',
+                  accent: 'border-t-[#E30613]',
                 },
               ].map((kpi) => (
                 <div
@@ -222,7 +222,7 @@ export const AdminDashboardPage: React.FC = () => {
 
             {/* Links Públicos de Compartilhamento Rápido */}
             <div className="bg-white border border-slate-200 rounded-md p-5">
-              <h2 className="font-bold text-sm uppercase tracking-wider text-[#0047B6] mb-3">
+              <h2 className="font-bold text-sm uppercase tracking-wider text-[#E30613] mb-3">
                 Endereços Públicos em Tempo Real (Sem Necessidade de Login)
               </h2>
               <div className="grid md:grid-cols-3 gap-3 text-xs">
@@ -257,7 +257,7 @@ export const AdminDashboardPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => copyLink(lnk.label, lnk.url)}
-                        className="inline-flex items-center gap-1 bg-[#0047B6] text-white font-semibold px-2.5 py-1.5 rounded cursor-pointer"
+                        className="inline-flex items-center gap-1 bg-[#E30613] hover:bg-[#C2040F] text-white font-semibold px-2.5 py-1.5 rounded cursor-pointer transition-colors"
                       >
                         <Copy size={12} />
                         <span>Copiar Link</span>
@@ -279,8 +279,8 @@ export const AdminDashboardPage: React.FC = () => {
             <div className="grid lg:grid-cols-12 gap-6">
               {/* Gráfico de Participação Diária */}
               <div className="lg:col-span-6 bg-white border border-slate-200 rounded-md p-5">
-                <h3 className="font-bold text-sm text-[#0F172A] flex items-center gap-2 mb-4">
-                  <BarChart3 size={17} className="text-[#0047B6]" />
+                <h3 className="font-bold text-sm text-[#1E293B] flex items-center gap-2 mb-4">
+                  <BarChart3 size={17} className="text-[#E30613]" />
                   <span>Participação Diária e Pontos Gerados</span>
                 </h3>
                 <div className="space-y-3 text-xs">
@@ -300,7 +300,7 @@ export const AdminDashboardPage: React.FC = () => {
                           </span>
                         </div>
                         <div className="h-2.5 bg-slate-100 rounded overflow-hidden">
-                          <div className="h-full bg-[#0047B6]" style={{ width: `${pct}%` }} />
+                          <div className="h-full bg-[#E30613]" style={{ width: `${pct}%` }} />
                         </div>
                       </div>
                     );
@@ -311,14 +311,14 @@ export const AdminDashboardPage: React.FC = () => {
               {/* Últimas Submissões Recebidas */}
               <div className="lg:col-span-6 bg-white border border-slate-200 rounded-md p-5">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-sm text-[#0F172A] flex items-center gap-2">
-                    <Activity size={17} className="text-[#0047B6]" />
+                  <h3 className="font-bold text-sm text-[#1E293B] flex items-center gap-2">
+                    <Activity size={17} className="text-[#E30613]" />
                     <span>Últimas Evidências Recebidas</span>
                   </h3>
                   <button
                     type="button"
                     onClick={() => setActiveTab('evidences')}
-                    className="text-xs font-bold text-[#0047B6] hover:underline cursor-pointer"
+                    className="text-xs font-bold text-[#E30613] hover:underline cursor-pointer"
                   >
                     Abrir Central de Análise →
                   </button>
@@ -357,8 +357,8 @@ export const AdminDashboardPage: React.FC = () => {
 
             {/* Desempenho por Turma */}
             <div className="bg-white border border-slate-200 rounded-md p-5">
-              <h3 className="font-bold text-sm text-[#0F172A] flex items-center gap-2 mb-3">
-                <Users size={17} className="text-[#0047B6]" />
+              <h3 className="font-bold text-sm text-[#1E293B] flex items-center gap-2 mb-3">
+                <Users size={17} className="text-[#E30613]" />
                 <span>Desempenho Geral por Turma</span>
               </h3>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
@@ -368,7 +368,7 @@ export const AdminDashboardPage: React.FC = () => {
                     className="p-3 rounded border border-slate-200 bg-[#F8FAFC] flex items-center justify-between"
                   >
                     <div className="min-w-0 pr-2">
-                      <div className="font-mono-tech font-bold text-[#0047B6]">
+                      <div className="font-mono-tech font-bold text-[#E30613]">
                         {c.position}º • {c.code}
                       </div>
                       <div className="font-semibold text-slate-800 truncate">{c.name}</div>
@@ -376,7 +376,7 @@ export const AdminDashboardPage: React.FC = () => {
                         {c.participantsCount} inscrito(s) • Média {c.averagePoints} pts
                       </div>
                     </div>
-                    <div className="font-condensed font-extrabold text-lg text-[#0F172A] shrink-0">
+                    <div className="font-condensed font-extrabold text-lg text-[#1E293B] shrink-0">
                       {c.totalPoints} PTS
                     </div>
                   </div>
@@ -394,3 +394,4 @@ export const AdminDashboardPage: React.FC = () => {
     </div>
   );
 };
+

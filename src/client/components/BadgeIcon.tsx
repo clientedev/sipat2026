@@ -72,3 +72,4 @@ export const BadgeIcon: React.FC<BadgeIconProps> = ({
     </div>
   );
 };
+

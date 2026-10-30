@@ -27,3 +27,4 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   const message = err instanceof Error ? err.message : 'Erro interno inesperado no servidor.';
   res.status(500).json({ error: message });
 }
+

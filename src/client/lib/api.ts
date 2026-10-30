@@ -86,3 +86,4 @@ export async function downloadAuthenticatedFile(url: string, fallbackFilename: s
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
 }
+

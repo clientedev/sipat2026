@@ -782,3 +782,4 @@ participantRouter.post('/push-subscribe', async (req, res, next) => {
     next(err);
   }
 });
+

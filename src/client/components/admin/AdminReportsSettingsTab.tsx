@@ -176,7 +176,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
             }
             className="p-4 border border-blue-300 bg-blue-50/60 hover:bg-blue-100 rounded-md text-left flex flex-col justify-between gap-2 cursor-pointer"
           >
-            <FileText size={20} className="text-[#0047B6]" />
+            <FileText size={20} className="text-[#E30613]" />
             <div>
               <div className="font-bold text-slate-900">Relatório Executivo (PDF)</div>
               <div className="text-[11px] text-slate-600">
@@ -324,7 +324,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
                 type="checkbox"
                 checked={Boolean(config.showAvatarsInPublic)}
                 onChange={(e) => setConfig({ ...config, showAvatarsInPublic: e.target.checked })}
-                className="accent-[#0047B6]"
+                className="accent-[#E30613]"
               />
               <span>
                 Permitir exibição de foto de perfil no Ranking Público (apenas para alunos que
@@ -334,7 +334,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
 
             <button
               type="submit"
-              className="bg-[#0047B6] text-white font-bold px-5 py-2.5 rounded cursor-pointer"
+              className="bg-[#E30613] text-white font-bold px-5 py-2.5 rounded cursor-pointer"
             >
               Salvar Configurações
             </button>
@@ -372,7 +372,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
               </div>
             )}
 
-            <label className="inline-flex items-center gap-2 bg-[#0047B6] hover:bg-[#003894] text-white font-bold px-4 py-2.5 rounded cursor-pointer">
+            <label className="inline-flex items-center gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold px-4 py-2.5 rounded cursor-pointer">
               <Upload size={15} />
               <span>Enviar Arquivo Oficial da Marca (.svg / .png)</span>
               <input
@@ -386,7 +386,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
             {isSuperAdmin && (
               <div className="pt-4 border-t border-slate-200 space-y-2">
                 <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                  <ShieldCheck size={15} className="text-[#0047B6]" />
+                  <ShieldCheck size={15} className="text-[#E30613]" />
                   <span>Retenção de Arquivos Multimídia (LGPD)</span>
                 </div>
                 <button
@@ -416,7 +416,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
                     <div className="font-bold text-slate-900">{s.fullName}</div>
                     <div className="text-slate-500 font-mono-tech">{s.email}</div>
                   </div>
-                  <span className="font-mono-tech font-bold px-2.5 py-0.5 rounded bg-blue-50 text-[#0047B6]">
+                  <span className="font-mono-tech font-bold px-2.5 py-0.5 rounded bg-blue-50 text-[#E30613]">
                     {s.role}
                   </span>
                 </div>
@@ -429,7 +429,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
             className="lg:col-span-5 bg-white border border-slate-200 rounded-md p-5 space-y-3"
           >
             <div className="font-bold text-sm text-[#0F172A] flex items-center gap-1.5">
-              <UserPlus size={16} className="text-[#0047B6]" />
+              <UserPlus size={16} className="text-[#E30613]" />
               <span>Cadastrar Avaliador ou Administrador</span>
             </div>
             <input
@@ -467,7 +467,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
             </select>
             <button
               type="submit"
-              className="w-full bg-[#0047B6] text-white font-bold py-2 rounded cursor-pointer"
+              className="w-full bg-[#E30613] text-white font-bold py-2 rounded cursor-pointer"
             >
               Criar Credencial Administrativa
             </button>
@@ -484,7 +484,7 @@ export const AdminReportsSettingsTab: React.FC = () => {
           {auditLogs.map((log) => (
             <div key={log.id} className="px-5 py-2.5 flex flex-wrap items-center justify-between gap-2">
               <div>
-                <span className="font-mono-tech font-bold text-[#0047B6] mr-2">{log.action}</span>
+                <span className="font-mono-tech font-bold text-[#E30613] mr-2">{log.action}</span>
                 <span className="text-slate-700">
                   Responsável: <strong>{log.actor?.fullName || 'Sistema'}</strong>
                   {log.targetUser ? ` → Participante: ${log.targetUser.fullName}` : ''}
@@ -503,3 +503,4 @@ export const AdminReportsSettingsTab: React.FC = () => {
     </div>
   );
 };
+

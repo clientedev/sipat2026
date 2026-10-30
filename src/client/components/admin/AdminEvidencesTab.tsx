@@ -199,7 +199,7 @@ export const AdminEvidencesTab: React.FC<{ onReviewed?: () => void }> = ({ onRev
               onClick={() => setStatusFilter(st.id)}
               className={`px-3 py-1.5 rounded text-xs font-bold uppercase font-mono-tech cursor-pointer ${
                 statusFilter === st.id
-                  ? 'bg-[#0047B6] text-white'
+                  ? 'bg-[#E30613] text-white'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -251,12 +251,12 @@ export const AdminEvidencesTab: React.FC<{ onReviewed?: () => void }> = ({ onRev
                   type="button"
                   onClick={() => openItem(s)}
                   className={`w-full text-left p-4 hover:bg-blue-50/40 transition-colors flex items-start justify-between gap-3 cursor-pointer ${
-                    selected?.id === s.id ? 'bg-blue-50 border-l-4 border-l-[#0047B6]' : ''
+                    selected?.id === s.id ? 'bg-blue-50 border-l-4 border-l-[#E30613]' : ''
                   }`}
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 text-[11px] font-mono-tech">
-                      <span className="font-bold text-[#0047B6]">DIA {s.mission.eventDay}</span>
+                      <span className="font-bold text-[#E30613]">DIA {s.mission.eventDay}</span>
                       <span>•</span>
                       <span className="text-slate-500">
                         {new Date(s.submittedAt).toLocaleString('pt-BR')}
@@ -264,7 +264,7 @@ export const AdminEvidencesTab: React.FC<{ onReviewed?: () => void }> = ({ onRev
                       {s.mediaMime?.startsWith('video/') ? (
                         <FileVideo size={13} className="text-amber-600" />
                       ) : s.mediaUrl ? (
-                        <ImageIcon size={13} className="text-[#0047B6]" />
+                        <ImageIcon size={13} className="text-[#E30613]" />
                       ) : null}
                     </div>
                     <div className="font-bold text-sm text-[#0F172A] truncate mt-0.5">
@@ -314,7 +314,7 @@ export const AdminEvidencesTab: React.FC<{ onReviewed?: () => void }> = ({ onRev
           ) : (
             <div className="space-y-4 text-xs">
               <div className="pb-3 border-b border-slate-200">
-                <span className="font-mono-tech uppercase text-[#0047B6] font-bold">
+                <span className="font-mono-tech uppercase text-[#E30613] font-bold">
                   ANÁLISE DE EVIDÊNCIA • DIA {selected.mission.eventDay}
                 </span>
                 <h3 className="text-base font-bold text-[#0F172A] mt-0.5">
@@ -415,7 +415,7 @@ export const AdminEvidencesTab: React.FC<{ onReviewed?: () => void }> = ({ onRev
                         disabled={!selected.participant.imageConsent}
                         checked={highlightInput && selected.participant.imageConsent}
                         onChange={(e) => setHighlightInput(e.target.checked)}
-                        className="accent-[#0047B6]"
+                        className="accent-[#E30613]"
                       />
                       <span>
                         Destacar atividade no mural (
@@ -478,3 +478,4 @@ export const AdminEvidencesTab: React.FC<{ onReviewed?: () => void }> = ({ onRev
     </div>
   );
 };
+

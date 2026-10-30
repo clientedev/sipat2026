@@ -180,25 +180,25 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
     <div className="fixed inset-0 z-50 bg-slate-900/75 flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
       <div className="bg-white border border-slate-300 rounded-md max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden shadow-xl">
         {/* Cabeçalho da Missão */}
-        <div className="bg-[#0047B6] text-white px-5 py-4 border-b-4 border-[#FFB800] flex items-start justify-between gap-4 shrink-0">
+        <div className="bg-[#1E293B] text-white px-5 py-4 border-b-4 border-[#E30613] flex items-start justify-between gap-4 shrink-0">
           <div>
-            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono-tech uppercase text-blue-200">
-              <span>
+            <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono-tech uppercase text-slate-300">
+              <span className="font-bold text-white">
                 DIA {mission.eventDay} ({mission.eventDateLabel})
               </span>
               <span>•</span>
-              <span>{mission.category}</span>
+              <span className="text-[#F59E0B] font-semibold">{mission.category}</span>
               <span>•</span>
-              <span className="bg-[#FFB800] text-[#0F172A] px-2 py-0.5 rounded font-bold">
+              <span className="bg-[#E30613] text-white px-2 py-0.5 rounded font-bold">
                 VALE {mission.points} PTS
               </span>
             </div>
-            <h2 className="text-lg sm:text-xl font-bold mt-1">{mission.title}</h2>
+            <h2 className="text-lg sm:text-xl font-bold mt-1 text-white">{mission.title}</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-white/80 hover:text-white p-1 cursor-pointer"
+            className="text-slate-400 hover:text-white p-1 rounded transition-colors cursor-pointer"
           >
             <X size={22} />
           </button>
@@ -227,7 +227,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
 
           <div className="bg-[#F8FAFC] border border-slate-200 rounded p-4 space-y-3">
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#0047B6] mb-1">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#E30613] mb-1">
                 Instruções Passo a Passo
               </h4>
               <p className="text-xs text-slate-700 whitespace-pre-line leading-relaxed">
@@ -252,7 +252,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
                   ? 'bg-red-50 border-red-200 border-l-red-600 text-red-950'
                   : existing.status === 'NEEDS_CORRECTION'
                   ? 'bg-amber-50 border-amber-200 border-l-amber-600 text-amber-950'
-                  : 'bg-blue-50 border-blue-200 border-l-[#0047B6] text-slate-900'
+                  : 'bg-red-50 border-red-200 border-l-[#E30613] text-slate-900'
               }`}
             >
               <div className="flex items-center justify-between gap-2 font-bold text-xs uppercase">
@@ -314,7 +314,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
 
               {mission.participationMode === 'TEAM' && (
                 <div className="bg-blue-50/60 border border-blue-200 rounded p-3.5 space-y-3">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#0047B6]">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#E30613]">
                     <Users size={15} />
                     <span>Identificação de Equipe / Dupla (Opcional se individual)</span>
                   </div>
@@ -340,7 +340,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
               {/* Campos Específicos: CAÇA AOS RISCOS */}
               {mission.submissionType === 'RISK_HUNT' && (
                 <div className="space-y-3 bg-[#F8FAFC] border border-slate-200 rounded p-4">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#0047B6]">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#E30613]">
                     Formulário Técnico – Caça aos Riscos
                   </h4>
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -421,7 +421,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
               {mission.submissionType === 'SEVEN_ERRORS' && mission.config?.items && (
                 <div className="space-y-2.5 bg-[#F8FAFC] border border-slate-200 rounded p-4">
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#0047B6]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#E30613]">
                       Checklist de Inspeção da Bancada (Marque os 7 Erros)
                     </h4>
                     <span className="text-xs font-mono-tech font-bold text-slate-700">
@@ -444,7 +444,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
                             type="checkbox"
                             checked={checked}
                             onChange={() => toggleSevenErrorItem(item.id)}
-                            className="mt-0.5 accent-[#0047B6]"
+                            className="mt-0.5 accent-[#E30613]"
                           />
                           <span>{item.label}</span>
                         </label>
@@ -457,14 +457,14 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
               {/* Campos Específicos: MÚLTIPLA ESCOLHA EM MISSÃO */}
               {mission.submissionType === 'MULTIPLE_CHOICE' && mission.config?.options && (
                 <div className="space-y-2.5 bg-[#F8FAFC] border border-slate-200 rounded p-4">
-                  <h4 className="text-xs font-bold text-[#0F172A]">{mission.config.question}</h4>
+                  <h4 className="text-xs font-bold text-[#1E293B]">{mission.config.question}</h4>
                   <div className="space-y-2">
                     {mission.config.options.map((opt) => (
                       <label
                         key={opt.id}
                         className={`flex items-start gap-2.5 p-2.5 rounded border text-xs cursor-pointer ${
                           selectedOptionId === opt.id
-                            ? 'bg-blue-50 border-[#0047B6] font-medium text-[#0F172A]'
+                            ? 'bg-red-50 border-[#E30613] font-medium text-[#1E293B]'
                             : 'bg-white border-slate-200 text-slate-700'
                         }`}
                       >
@@ -473,7 +473,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
                           name="missionOption"
                           checked={selectedOptionId === opt.id}
                           onChange={() => setSelectedOptionId(opt.id)}
-                          className="mt-0.5 accent-[#0047B6]"
+                          className="mt-0.5 accent-[#E30613]"
                         />
                         <span>{opt.text}</span>
                       </label>
@@ -494,7 +494,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
                     value={textResponse}
                     onChange={(e) => setTextResponse(e.target.value)}
                     placeholder="Registre aqui sua análise técnica, medidas preventivas ou compromisso..."
-                    className="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#0047B6]"
+                    className="w-full border border-slate-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-[#E30613]"
                   />
                 </div>
               )}
@@ -540,7 +540,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
                     <button
                       type="button"
                       onClick={() => cameraRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 bg-[#0047B6] hover:bg-[#003894] text-white text-xs font-semibold px-3.5 py-2.5 rounded cursor-pointer"
+                      className="inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-semibold px-3.5 py-2.5 rounded cursor-pointer"
                     >
                       {mission.requiresVideo ? <FileVideo size={15} /> : <Camera size={15} />}
                       <span>
@@ -621,3 +621,4 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
     </div>
   );
 };
+

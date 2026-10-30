@@ -93,7 +93,7 @@ export const PublicOverviewPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F4F6F9] flex flex-col">
-      <header className="bg-[#0047B6] text-white border-b-4 border-[#FFB800]">
+      <header className="bg-[#1E293B] text-white border-b-4 border-[#E30613] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <InstitutionalBrand
             officialLogoUrl={data?.officialLogoUrl ? '/api/media/brand' : null}
@@ -126,7 +126,7 @@ export const PublicOverviewPage: React.FC = () => {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div>
-          <span className="text-xs font-mono-tech uppercase text-[#0047B6] font-bold">
+          <span className="text-xs font-mono-tech uppercase text-[#E30613] font-bold">
             TRANSPARÊNCIA E INDICADORES EM TEMPO REAL
           </span>
           <h1 className="text-2xl sm:text-3xl font-bold text-[#0F172A] mt-1">
@@ -145,7 +145,7 @@ export const PublicOverviewPage: React.FC = () => {
             {
               label: 'Inscritos',
               val: data?.indicators.totalRegistered ?? 0,
-              icon: <Users size={18} className="text-[#0047B6]" />,
+              icon: <Users size={18} className="text-[#E30613]" />,
             },
             {
               label: 'Participação Ativa',
@@ -170,12 +170,12 @@ export const PublicOverviewPage: React.FC = () => {
             {
               label: 'Pontos Acumulados',
               val: data?.indicators.totalPointsAccumulated ?? 0,
-              icon: <Award size={18} className="text-[#0047B6]" />,
+              icon: <Award size={18} className="text-[#E30613]" />,
             },
           ].map((card) => (
             <div
               key={card.label}
-              className="bg-white border border-slate-200 border-t-4 border-t-[#0047B6] rounded-md p-4"
+              className="bg-white border border-slate-200 border-t-4 border-t-[#E30613] rounded-md p-4"
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] uppercase font-mono-tech text-slate-500">
@@ -195,8 +195,8 @@ export const PublicOverviewPage: React.FC = () => {
           <div className="lg:col-span-7 bg-white border border-slate-200 rounded-md p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="font-bold text-base text-[#0F172A] flex items-center gap-2">
-                  <BarChart3 size={18} className="text-[#0047B6]" />
+                <h2 className="font-bold text-base text-[#1E293B] flex items-center gap-2">
+                  <BarChart3 size={18} className="text-[#E30613]" />
                   <span>Evolução Diária da Mobilização</span>
                 </h2>
                 <p className="text-xs text-slate-500">
@@ -214,12 +214,12 @@ export const PublicOverviewPage: React.FC = () => {
                       <span className="font-mono-tech font-bold text-slate-700">{day.date}</span>
                       <span className="text-slate-600">
                         {day.evidencesSent} evidência(s) • {day.quizzesAnswered} quiz(zes) •{' '}
-                        <strong className="text-[#0047B6]">{day.pointsGenerated} pts</strong>
+                        <strong className="text-[#E30613]">{day.pointsGenerated} pts</strong>
                       </span>
                     </div>
                     <div className="w-full h-3 bg-slate-100 rounded overflow-hidden">
                       <div
-                        className="h-full bg-[#0047B6] transition-all duration-500"
+                        className="h-full bg-[#E30613] transition-all duration-500"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -231,7 +231,7 @@ export const PublicOverviewPage: React.FC = () => {
 
           {/* Engajamento das Principais Turmas */}
           <div className="lg:col-span-5 bg-white border border-slate-200 rounded-md p-6">
-            <h2 className="font-bold text-base text-[#0F172A] mb-1">
+            <h2 className="font-bold text-base text-[#1E293B] mb-1">
               Turmas Mais Engajadas
             </h2>
             <p className="text-xs text-slate-500 mb-4">
@@ -244,7 +244,7 @@ export const PublicOverviewPage: React.FC = () => {
                   className="p-3 rounded border border-slate-200 bg-[#F8FAFC] flex items-center justify-between gap-2"
                 >
                   <div className="min-w-0">
-                    <div className="text-xs font-mono-tech font-bold text-[#0047B6]">
+                    <div className="text-xs font-mono-tech font-bold text-[#E30613]">
                       {cls.position}º • {cls.code}
                     </div>
                     <div className="text-xs font-semibold text-slate-800 truncate">{cls.name}</div>
@@ -252,7 +252,7 @@ export const PublicOverviewPage: React.FC = () => {
                       {cls.participantsCount} inscrito(s) • {cls.completedActivities} ativ.
                     </div>
                   </div>
-                  <div className="font-condensed font-extrabold text-lg text-[#0F172A] shrink-0">
+                  <div className="font-condensed font-extrabold text-lg text-[#1E293B] shrink-0">
                     {cls.totalPoints} PTS
                   </div>
                 </div>
@@ -263,7 +263,7 @@ export const PublicOverviewPage: React.FC = () => {
 
         {/* Mapa de Missões Publicadas e Realizadas */}
         <div className="bg-white border border-slate-200 rounded-md p-6">
-          <h2 className="font-bold text-base text-[#0F172A] mb-4">
+          <h2 className="font-bold text-base text-[#1E293B] mb-4">
             Andamento das Missões da Campanha SIPAT 2026
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -274,7 +274,7 @@ export const PublicOverviewPage: React.FC = () => {
               >
                 <div>
                   <div className="flex items-center justify-between text-[11px] font-mono-tech mb-1.5">
-                    <span className="text-[#0047B6] font-bold">
+                    <span className="text-[#E30613] font-bold">
                       DIA {m.eventDay} • {m.eventDateLabel}
                     </span>
                     <span
@@ -293,14 +293,14 @@ export const PublicOverviewPage: React.FC = () => {
                         : 'ENCERRADA'}
                     </span>
                   </div>
-                  <h3 className="font-bold text-sm text-[#0F172A]">{m.title}</h3>
+                  <h3 className="font-bold text-sm text-[#1E293B]">{m.title}</h3>
                   <p className="text-xs text-slate-500 mt-0.5">{m.category}</p>
                 </div>
                 <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between text-xs">
                   <span className="font-semibold text-slate-700">
                     {m.submissionsCount} participação(ões)
                   </span>
-                  <span className="font-mono-tech font-bold text-[#0047B6]">{m.points} PTS</span>
+                  <span className="font-mono-tech font-bold text-[#E30613]">{m.points} PTS</span>
                 </div>
               </div>
             ))}
@@ -310,3 +310,4 @@ export const PublicOverviewPage: React.FC = () => {
     </div>
   );
 };
+

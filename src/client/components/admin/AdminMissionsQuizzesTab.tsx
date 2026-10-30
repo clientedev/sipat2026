@@ -246,7 +246,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
             onClick={() => setSubSection('missions')}
             className={`px-4 py-2 rounded text-xs font-bold uppercase cursor-pointer ${
               subSection === 'missions'
-                ? 'bg-[#0047B6] text-white'
+                ? 'bg-[#E30613] text-white'
                 : 'bg-slate-100 text-slate-700'
             }`}
           >
@@ -257,7 +257,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
             onClick={() => setSubSection('quizzes')}
             className={`px-4 py-2 rounded text-xs font-bold uppercase cursor-pointer ${
               subSection === 'quizzes'
-                ? 'bg-[#0047B6] text-white'
+                ? 'bg-[#E30613] text-white'
                 : 'bg-slate-100 text-slate-700'
             }`}
           >
@@ -316,7 +316,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
             <tbody className="divide-y divide-slate-200">
               {missions.map((m) => (
                 <tr key={m.id} className="hover:bg-slate-50">
-                  <td className="py-3 px-4 font-mono-tech font-bold text-[#0047B6]">
+                  <td className="py-3 px-4 font-mono-tech font-bold text-[#E30613]">
                     Dia {m.eventDay}
                     <div className="text-[10px] text-slate-400">{m.eventDateLabel}</div>
                   </td>
@@ -399,7 +399,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
             {quizzes.map((q) => (
               <div key={q.id} className="p-4 flex items-start justify-between gap-3 text-xs">
                 <div>
-                  <span className="font-mono-tech text-[#0047B6] font-bold">
+                  <span className="font-mono-tech text-[#E30613] font-bold">
                     DIA {q.eventDay} • {q.status} • {q.maxPoints} PTS
                   </span>
                   <h4 className="font-bold text-sm text-slate-900 mt-0.5">{q.title}</h4>
@@ -425,7 +425,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setQuestionTargetQuiz(q)}
-                    className="px-2.5 py-1.5 bg-[#0047B6] text-white rounded font-semibold cursor-pointer"
+                    className="px-2.5 py-1.5 bg-[#E30613] text-white rounded font-semibold cursor-pointer"
                   >
                     Questões ({q.questions?.length ?? 0})
                   </button>
@@ -444,7 +444,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
             ) : (
               <>
                 <div className="pb-2 border-b border-slate-200">
-                  <span className="font-mono-tech text-[#0047B6] font-bold uppercase">
+                  <span className="font-mono-tech text-[#E30613] font-bold uppercase">
                     BANCO DE QUESTÕES DO QUIZ
                   </span>
                   <h3 className="font-bold text-sm text-slate-900">{questionTargetQuiz.title}</h3>
@@ -457,7 +457,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
                       className="p-2.5 bg-slate-50 border border-slate-200 rounded flex items-start justify-between gap-2"
                     >
                       <div>
-                        <span className="font-mono-tech font-bold text-[#0047B6]">
+                        <span className="font-mono-tech font-bold text-[#E30613]">
                           #{idx + 1} [{q.courseTrack}]
                         </span>{' '}
                         <span className="font-medium text-slate-800">{q.prompt}</span>
@@ -575,7 +575,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
 
                   <button
                     type="submit"
-                    className="bg-[#0047B6] text-white font-bold px-4 py-2 rounded cursor-pointer"
+                    className="bg-[#E30613] text-white font-bold px-4 py-2 rounded cursor-pointer"
                   >
                     Salvar Questão no Quiz
                   </button>
@@ -818,7 +818,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-[#0047B6] text-white font-bold rounded cursor-pointer"
+                className="px-5 py-2 bg-[#E30613] text-white font-bold rounded cursor-pointer"
               >
                 Salvar Missão
               </button>
@@ -931,7 +931,7 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 bg-[#0047B6] text-white font-bold rounded cursor-pointer"
+                className="px-5 py-2 bg-[#E30613] text-white font-bold rounded cursor-pointer"
               >
                 Salvar Quiz
               </button>
@@ -942,3 +942,4 @@ export const AdminMissionsQuizzesTab: React.FC = () => {
     </div>
   );
 };
+

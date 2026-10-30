@@ -11,3 +11,4 @@ Em conformidade com as normas de identidade visual do SENAI, esta plataforma **n
 
 2. **Pelo Repositório (Opcional):**
    - Você também pode adicionar o arquivo oficial em `public/brand/senai-oficial.svg` (ou `public/brand/senai-oficial.png`). O componente `<InstitutionalBrand />` detecta automaticamente o arquivo oficial caso nenhum tenha sido enviado pelo painel.
+

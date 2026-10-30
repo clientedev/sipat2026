@@ -1759,3 +1759,4 @@ adminRouter.get('/reports/risk-hunt.pdf', requireRoles(...ADMIN_ROLES), async (_
     next(err);
   }
 });
+

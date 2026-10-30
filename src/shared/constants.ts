@@ -103,3 +103,4 @@ export const SIPAT_EVENT_DAYS = [
     focus: 'Informática Segura, Logística, Climatização e Refrigeração, Mito ou Verdade, Quiz Final e Compromisso',
   },
 ] as const;
+

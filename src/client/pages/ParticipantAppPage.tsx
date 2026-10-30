@@ -294,7 +294,7 @@ export const ParticipantAppPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F4F6F9] flex flex-col">
       {/* Barra Superior Institucional */}
-      <header className="bg-[#0047B6] text-white border-b-4 border-[#FFB800] sticky top-0 z-30">
+      <header className="bg-[#1E293B] text-white border-b-4 border-[#E30613] sticky top-0 z-30 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link to="/">
             <InstitutionalBrand
@@ -350,7 +350,7 @@ export const ParticipantAppPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={handleMarkNotificationsRead}
-                      className="text-[11px] text-[#0047B6] font-semibold hover:underline cursor-pointer"
+                      className="text-[11px] text-[#E30613] font-semibold hover:underline cursor-pointer"
                     >
                       Marcar todas como lidas
                     </button>
@@ -364,9 +364,9 @@ export const ParticipantAppPage: React.FC = () => {
                       data.notifications.map((n) => (
                         <div
                           key={n.id}
-                          className={`p-3 text-xs ${n.isRead ? 'bg-white' : 'bg-blue-50/60'}`}
+                          className={`p-3 text-xs ${n.isRead ? 'bg-white' : 'bg-red-50/60'}`}
                         >
-                          <div className="font-bold text-[#0F172A]">{n.title}</div>
+                          <div className="font-bold text-[#1E293B]">{n.title}</div>
                           <div className="text-slate-600 mt-0.5">{n.message}</div>
                           <div className="text-[10px] font-mono-tech text-slate-400 mt-1">
                             {new Date(n.createdAt).toLocaleString('pt-BR')}
@@ -380,7 +380,7 @@ export const ParticipantAppPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleEnablePush}
-                        className="w-full text-xs bg-[#0047B6] text-white font-semibold py-1.5 rounded cursor-pointer"
+                        className="w-full text-xs bg-[#E30613] hover:bg-[#C2040F] text-white font-semibold py-1.5 rounded cursor-pointer"
                       >
                         Ativar Notificações Push neste Dispositivo
                       </button>
@@ -429,7 +429,7 @@ export const ParticipantAppPage: React.FC = () => {
       <section className="bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 grid lg:grid-cols-12 gap-6 items-center">
           <div className="lg:col-span-7 flex items-center gap-4">
-            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-md bg-[#0047B6] text-white border-2 border-[#0047B6] overflow-hidden flex items-center justify-center font-condensed font-extrabold text-2xl shrink-0">
+            <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-[#E30613] text-white border-2 border-slate-200 overflow-hidden flex items-center justify-center font-extrabold text-2xl shrink-0 shadow-xs">
               {profile.avatarUrl ? (
                 <img
                   src={profile.avatarUrl}
@@ -442,7 +442,7 @@ export const ParticipantAppPage: React.FC = () => {
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-mono-tech uppercase px-2 py-0.5 rounded bg-blue-50 text-[#0047B6] border border-blue-200 font-bold">
+                <span className="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-[#E30613] border border-red-200">
                   NÍVEL {profile.level} • {profile.levelTitle}
                 </span>
                 {profile.registrationCode && (
@@ -451,7 +451,7 @@ export const ParticipantAppPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold text-[#0F172A] truncate mt-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B] truncate mt-1">
                 {profile.fullName}
               </h1>
               <p className="text-xs sm:text-sm text-slate-600 truncate">
@@ -464,7 +464,7 @@ export const ParticipantAppPage: React.FC = () => {
               <div className="mt-2.5 max-w-md">
                 <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
                   <span>Progresso de Nível Preventivo</span>
-                  <span className="font-mono-tech font-semibold text-[#0047B6]">
+                  <span className="font-semibold text-[#E30613]">
                     {profile.nextLevelPoints
                       ? `${profile.totalPoints} / ${profile.nextLevelPoints} PTS`
                       : 'Nível Máximo Alcançado!'}
@@ -472,7 +472,7 @@ export const ParticipantAppPage: React.FC = () => {
                 </div>
                 <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#0047B6] transition-all duration-500"
+                    className="h-full bg-[#E30613] transition-all duration-500"
                     style={{ width: `${profile.levelProgressPercent}%` }}
                   />
                 </div>
@@ -481,25 +481,25 @@ export const ParticipantAppPage: React.FC = () => {
           </div>
 
           <div className="lg:col-span-5 grid grid-cols-3 gap-3">
-            <div className="bg-[#F8FAFC] border border-slate-200 border-t-4 border-t-[#0047B6] rounded-md p-3.5 text-center">
-              <div className="font-condensed font-extrabold text-2xl sm:text-3xl text-[#0047B6] tabular-nums">
+            <div className="bg-[#F8FAFC] border border-slate-200 border-t-4 border-t-[#E30613] rounded-xl p-3.5 text-center shadow-2xs">
+              <div className="font-extrabold text-2xl sm:text-3xl text-[#E30613] tabular-nums">
                 {profile.totalPoints}
               </div>
-              <div className="text-[11px] uppercase font-mono-tech text-slate-500">Pontos</div>
+              <div className="text-[11px] uppercase font-bold text-slate-500">Pontos</div>
             </div>
-            <div className="bg-[#F8FAFC] border border-slate-200 border-t-4 border-t-[#FFB800] rounded-md p-3.5 text-center">
-              <div className="font-condensed font-extrabold text-2xl sm:text-3xl text-[#0F172A] tabular-nums">
+            <div className="bg-[#F8FAFC] border border-slate-200 border-t-4 border-t-[#F59E0B] rounded-xl p-3.5 text-center shadow-2xs">
+              <div className="font-extrabold text-2xl sm:text-3xl text-[#1E293B] tabular-nums">
                 {profile.rankPosition ? `${profile.rankPosition}º` : '—'}
               </div>
-              <div className="text-[11px] uppercase font-mono-tech text-slate-500">
+              <div className="text-[11px] uppercase font-bold text-slate-500">
                 No Ranking
               </div>
             </div>
-            <div className="bg-[#F8FAFC] border border-slate-200 border-t-4 border-t-[#15803D] rounded-md p-3.5 text-center">
-              <div className="font-condensed font-extrabold text-2xl sm:text-3xl text-[#15803D] tabular-nums">
+            <div className="bg-[#F8FAFC] border border-slate-200 border-t-4 border-t-[#10B981] rounded-xl p-3.5 text-center shadow-2xs">
+              <div className="font-extrabold text-2xl sm:text-3xl text-[#10B981] tabular-nums">
                 {profile.approvedMissionsCount + profile.completedQuizzesCount}
               </div>
-              <div className="text-[11px] uppercase font-mono-tech text-slate-500">Concluídas</div>
+              <div className="text-[11px] uppercase font-bold text-slate-500">Concluídas</div>
             </div>
           </div>
         </div>
@@ -534,8 +534,8 @@ export const ParticipantAppPage: React.FC = () => {
               onClick={() => setActiveTab(tab.id as any)}
               className={`px-4 py-3 text-xs sm:text-sm font-bold flex items-center gap-2 whitespace-nowrap border-b-3 transition-colors cursor-pointer ${
                 activeTab === tab.id
-                  ? 'border-[#0047B6] text-[#0047B6] bg-blue-50/40'
-                  : 'border-transparent text-slate-600 hover:text-[#0F172A]'
+                  ? 'border-[#E30613] text-[#E30613] bg-red-50/50'
+                  : 'border-transparent text-slate-600 hover:text-[#1E293B]'
               }`}
             >
               {tab.icon}
@@ -554,9 +554,9 @@ export const ParticipantAppPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDayFilter('ALL')}
-                className={`px-3.5 py-2 rounded text-xs font-bold uppercase font-mono-tech cursor-pointer ${
+                className={`px-3.5 py-2 rounded text-xs font-bold uppercase font-mono-tech cursor-pointer transition-colors ${
                   dayFilter === 'ALL'
-                    ? 'bg-[#0047B6] text-white'
+                    ? 'bg-[#E30613] text-white shadow-xs'
                     : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -567,9 +567,9 @@ export const ParticipantAppPage: React.FC = () => {
                   key={d.day}
                   type="button"
                   onClick={() => setDayFilter(d.day)}
-                  className={`px-3.5 py-2 rounded text-xs font-bold uppercase font-mono-tech cursor-pointer ${
+                  className={`px-3.5 py-2 rounded text-xs font-bold uppercase font-mono-tech cursor-pointer transition-colors ${
                     dayFilter === d.day
-                      ? 'bg-[#0047B6] text-white'
+                      ? 'bg-[#E30613] text-white shadow-xs'
                       : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
                   }`}
                 >
@@ -597,7 +597,7 @@ export const ParticipantAppPage: React.FC = () => {
                           <div className="absolute top-2.5 left-2.5 bg-[#0F172A]/90 text-white text-[10px] font-mono-tech font-bold px-2 py-1 rounded">
                             DIA {m.eventDay} • {m.eventDateLabel}
                           </div>
-                          <div className="absolute top-2.5 right-2.5 bg-[#FFB800] text-[#0F172A] text-xs font-condensed font-extrabold px-2.5 py-0.5 rounded">
+                          <div className="absolute top-2.5 right-2.5 bg-[#E30613] text-white text-xs font-bold px-2.5 py-0.5 rounded">
                             +{m.points} PTS
                           </div>
                         </div>
@@ -605,12 +605,12 @@ export const ParticipantAppPage: React.FC = () => {
 
                       <div className="p-4 space-y-2">
                         <div className="flex items-center justify-between gap-2 text-[11px] font-mono-tech">
-                          <span className="text-[#0047B6] font-bold uppercase">{m.category}</span>
+                          <span className="text-[#E30613] font-bold uppercase">{m.category}</span>
                           <span className="text-slate-500">
                             {m.participationMode === 'TEAM' ? 'Individual / Equipe' : 'Individual'}
                           </span>
                         </div>
-                        <h3 className="font-bold text-base text-[#0F172A]">{m.title}</h3>
+                        <h3 className="font-bold text-base text-[#1E293B]">{m.title}</h3>
                         <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                           {m.summary}
                         </p>
@@ -624,7 +624,7 @@ export const ParticipantAppPage: React.FC = () => {
                             sub.status === 'APPROVED'
                               ? 'bg-emerald-100 text-emerald-800'
                               : sub.status === 'PENDING'
-                              ? 'bg-blue-100 text-[#0047B6]'
+                              ? 'bg-red-100 text-[#E30613]'
                               : sub.status === 'NEEDS_CORRECTION'
                               ? 'bg-amber-100 text-amber-900'
                               : 'bg-red-100 text-red-800'
@@ -664,7 +664,7 @@ export const ParticipantAppPage: React.FC = () => {
                         type="button"
                         disabled={m.status === 'SCHEDULED'}
                         onClick={() => setSelectedMission(m)}
-                        className="bg-[#0047B6] hover:bg-[#003894] disabled:bg-slate-300 disabled:text-slate-500 text-white text-xs font-bold px-3.5 py-2 rounded cursor-pointer"
+                        className="bg-[#E30613] hover:bg-[#C2040F] disabled:bg-slate-300 disabled:text-slate-500 text-white text-xs font-bold px-3.5 py-2 rounded cursor-pointer transition-colors shadow-2xs"
                       >
                         {sub
                           ? sub.status === 'NEEDS_CORRECTION'
@@ -689,18 +689,18 @@ export const ParticipantAppPage: React.FC = () => {
               return (
                 <div
                   key={q.id}
-                  className="bg-white border border-slate-200 border-l-4 border-l-[#0047B6] rounded-md p-5 flex flex-col justify-between gap-4"
+                  className="bg-white border border-slate-200 border-l-4 border-l-[#E30613] rounded-md p-5 flex flex-col justify-between gap-4 shadow-2xs"
                 >
                   <div>
                     <div className="flex items-center justify-between text-xs font-mono-tech mb-2">
-                      <span className="text-[#0047B6] font-bold">
+                      <span className="text-[#E30613] font-bold">
                         DIA {q.eventDay} ({q.eventDateLabel}) • {q.category}
                       </span>
-                      <span className="bg-[#FFB800]/25 text-amber-950 font-bold px-2 py-0.5 rounded">
+                      <span className="bg-red-100 text-[#E30613] font-bold px-2 py-0.5 rounded">
                         ATÉ {q.maxPoints} PTS
                       </span>
                     </div>
-                    <h3 className="font-bold text-base sm:text-lg text-[#0F172A]">{q.title}</h3>
+                    <h3 className="font-bold text-base sm:text-lg text-[#1E293B]">{q.title}</h3>
                     <p className="text-xs text-slate-600 mt-1 leading-relaxed">{q.description}</p>
 
                     <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-500 font-mono-tech">
@@ -730,7 +730,7 @@ export const ParticipantAppPage: React.FC = () => {
                       type="button"
                       disabled={q.status !== 'PUBLISHED' || exhausted}
                       onClick={() => setActiveQuizId(q.id)}
-                      className="bg-[#0047B6] hover:bg-[#003894] disabled:bg-slate-200 disabled:text-slate-500 text-white text-xs font-bold px-4 py-2.5 rounded cursor-pointer"
+                      className="bg-[#E30613] hover:bg-[#C2040F] disabled:bg-slate-200 disabled:text-slate-500 text-white text-xs font-bold px-4 py-2.5 rounded cursor-pointer transition-colors shadow-2xs"
                     >
                       {q.status === 'SCHEDULED'
                         ? 'Agendado'
@@ -759,7 +759,7 @@ export const ParticipantAppPage: React.FC = () => {
                     key={b.id}
                     className={`rounded-md border p-4 flex flex-col justify-between gap-3 ${
                       b.unlocked
-                        ? 'bg-white border-[#0047B6]'
+                        ? 'bg-white border-[#E30613]'
                         : 'bg-slate-100 border-slate-200 opacity-75'
                     }`}
                   >
@@ -781,7 +781,7 @@ export const ParticipantAppPage: React.FC = () => {
                       </span>
                     </div>
                     <div>
-                      <h3 className="font-bold text-sm text-[#0F172A]">{b.name}</h3>
+                      <h3 className="font-bold text-sm text-[#1E293B]">{b.name}</h3>
                       <p className="text-xs text-slate-600 mt-1">{b.description}</p>
                     </div>
                   </div>
@@ -790,7 +790,7 @@ export const ParticipantAppPage: React.FC = () => {
             </div>
 
             <div className="bg-white border border-slate-200 rounded-md p-5">
-              <h3 className="font-bold text-base text-[#0F172A] mb-3">
+              <h3 className="font-bold text-base text-[#1E293B] mb-3">
                 Escala de Níveis de Prevenção SIPAT 2026
               </h3>
               <div className="grid sm:grid-cols-5 gap-3">
@@ -801,11 +801,11 @@ export const ParticipantAppPage: React.FC = () => {
                       key={lvl.level}
                       className={`p-3 rounded border text-xs ${
                         reached
-                          ? 'bg-blue-50 border-[#0047B6] text-[#0F172A]'
+                          ? 'bg-red-50/60 border-[#E30613] text-[#1E293B]'
                           : 'bg-slate-50 border-slate-200 text-slate-500'
                       }`}
                     >
-                      <div className="font-mono-tech font-bold text-[#0047B6]">
+                      <div className="font-mono-tech font-bold text-[#E30613]">
                         NÍVEL {lvl.level}
                       </div>
                       <div className="font-bold mt-0.5">{lvl.title}</div>
@@ -821,7 +821,7 @@ export const ParticipantAppPage: React.FC = () => {
         {activeTab === 'history' && (
           <div className="grid lg:grid-cols-12 gap-6">
             <div className="lg:col-span-7 bg-white border border-slate-200 rounded-md p-5">
-              <h2 className="font-bold text-base text-[#0F172A] mb-4">
+              <h2 className="font-bold text-base text-[#1E293B] mb-4">
                 Extrato Auditável de Pontuação
               </h2>
               {data.pointHistory.length === 0 ? (
@@ -836,7 +836,7 @@ export const ParticipantAppPage: React.FC = () => {
                       className="py-3 flex items-center justify-between gap-4 text-xs"
                     >
                       <div>
-                        <div className="font-semibold text-[#0F172A]">{item.reason}</div>
+                        <div className="font-semibold text-[#1E293B]">{item.reason}</div>
                         <div className="text-[11px] font-mono-tech text-slate-500">
                           {new Date(item.createdAt).toLocaleString('pt-BR')} • Saldo após:{' '}
                           {item.balanceAfter} pts
@@ -857,13 +857,13 @@ export const ParticipantAppPage: React.FC = () => {
 
             <div className="lg:col-span-5 space-y-5">
               <div className="bg-white border border-slate-200 rounded-md p-5 space-y-4">
-                <div className="flex items-center gap-2 font-bold text-sm text-[#0F172A]">
-                  <Shield size={18} className="text-[#0047B6]" />
+                <div className="flex items-center gap-2 font-bold text-sm text-[#1E293B]">
+                  <Shield size={18} className="text-[#E30613]" />
                   <span>Perfil, Privacidade e Direitos LGPD</span>
                 </div>
 
                 <div>
-                  <label className="inline-flex items-center gap-2 bg-[#0047B6] hover:bg-[#003894] text-white text-xs font-semibold px-3.5 py-2 rounded cursor-pointer">
+                  <label className="inline-flex items-center gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-semibold px-3.5 py-2 rounded cursor-pointer">
                     <Camera size={14} />
                     <span>Atualizar Foto de Perfil</span>
                     <input
@@ -880,7 +880,7 @@ export const ParticipantAppPage: React.FC = () => {
                     type="checkbox"
                     checked={profile.imageConsent}
                     onChange={(e) => handleToggleImageConsent(e.target.checked)}
-                    className="mt-0.5 accent-[#0047B6]"
+                    className="mt-0.5 accent-[#E30613]"
                   />
                   <span>
                     Autorizo o uso institucional e educativo de imagem na campanha SIPAT 2026
@@ -934,3 +934,4 @@ export const ParticipantAppPage: React.FC = () => {
     </div>
   );
 };
+

@@ -130,3 +130,4 @@ npm run test:e2e
 
 **SEGURANÇA COMEÇA COM VOCÊ. SUA ATITUDE FAZ A DIFERENÇA!**  
 *Escola SENAI "Morvan Figueiredo" • SIPAT 2026*
+

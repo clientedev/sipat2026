@@ -593,3 +593,4 @@ export async function generateQrPosterPdf(params: {
     doc.end();
   });
 }
+

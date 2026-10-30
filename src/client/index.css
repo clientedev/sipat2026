@@ -2,53 +2,64 @@
 
 @layer base {
   :root {
-    --senai-blue: #0047b6;
-    --senai-blue-dark: #002b5c;
-    --senai-blue-hover: #003894;
-    --safety-yellow: #ffb800;
-    --safety-green: #15803d;
-    --safety-red: #dc2626;
+    --senai-red: #E30613;
+    --senai-red-hover: #C2040F;
+    --senai-red-dark: #9E030C;
+    --senai-blue: #0047B6;
+    --senai-dark: #1E293B;
+    --safety-yellow: #F59E0B;
+    --safety-green: #10B981;
   }
 
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: #f4f6f9;
-    color: #0f172a;
+    font-family: 'Open Sans', 'Roboto', 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #F8FAFC;
+    color: #1E293B;
+    -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, .font-display {
-    font-family: 'Barlow', 'Inter', sans-serif;
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Open Sans', 'Roboto', sans-serif;
+    font-weight: 700;
   }
 
   .font-condensed {
-    font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+    font-family: 'Open Sans', 'Roboto', sans-serif;
+    font-weight: 800;
   }
 
   .font-mono-tech {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Roboto', monospace;
+    font-feature-settings: "tnum";
   }
 }
 
-/* Faixa sutil de sinalização preventiva NR-26 (Amarelo Segurança e Preto Industrial) */
+/* Faixa institucional de sinalização e cabeçalho SENAI SP */
+.senai-red-stripe {
+  background-color: #E30613;
+}
+
+/* Faixa preventiva NR-26 (Amarelo Segurança e Preto Industrial) */
 .safety-hazard-bar {
   background: repeating-linear-gradient(
     -45deg,
-    #ffb800,
-    #ffb800 12px,
-    #111827 12px,
-    #111827 24px
+    #F59E0B,
+    #F59E0B 12px,
+    #1E293B 12px,
+    #1E293B 24px
   );
 }
 
-/* Grade técnica industrial sutil para cabeçalhos institucionais */
-.senai-blueprint-grid {
-  background-color: #003380;
+/* Grade de fundo sutil e limpa no estilo SENAI Mooca */
+.senai-grid-pattern {
+  background-color: #FFFFFF;
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(227, 6, 19, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(227, 6, 19, 0.03) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+

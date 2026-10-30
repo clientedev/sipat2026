@@ -37,3 +37,4 @@ healthRouter.get('/', async (_req, res) => {
     });
   }
 });
+
