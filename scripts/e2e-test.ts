@@ -454,7 +454,7 @@ async function runTests() {
     console.log('✔ [7/10] Quizzes, ajuste auditado, 5 Medalhas desbloqueadas e Ranking Público LGPD OK');
 
     // 7. Teste Real do Agendador Automático + Disparo WebSocket em Tempo Real
-    const opensSoon = new Date(Date.now() + 1500).toISOString();
+    const opensSoon = new Date(Date.now() - 500).toISOString();
     const scheduledMissionRes = await jsonReq(
       '/api/admin/missions',
       {

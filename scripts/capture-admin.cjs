@@ -100,3 +100,4 @@ captureAdminScreenshots().catch((err) => {
   console.error('[ERRO CAPTURA ADMIN]', err);
   process.exit(1);
 });
+

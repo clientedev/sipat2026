@@ -469,3 +469,4 @@ writeStreamRoot.on('finish', () => {
   rootDone = true;
   checkFinished();
 });
+
