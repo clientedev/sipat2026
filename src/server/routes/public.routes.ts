@@ -559,51 +559,54 @@ publicRouter.get('/certificate/verify/:code', async (req, res, next) => {
     const code = String(req.params.code || '').trim().toUpperCase();
     const config = await getSystemConfigSafe();
 
-    // Extrai o ID ou prefixo do certificado
-    const userMatch = await prisma.user.findFirst({
+    // Busca o certificado oficial emitido e homologado
+    const cert = await prisma.certificate.findFirst({
       where: {
         OR: [
-          { registrationCode: { equals: code, mode: 'insensitive' } },
-          { id: { startsWith: code.replace(/^SENAI-SIPAT2026-MF-/, '').toLowerCase() } },
+          { verificationCode: code },
+          { user: { registrationCode: { equals: code, mode: 'insensitive' } } },
         ],
+        status: 'ISSUED',
       },
       include: {
-        classGroup: true,
-        badges: { include: { badge: true } },
+        user: {
+          include: {
+            classGroup: true,
+            badges: { include: { badge: true } },
+          },
+        },
+        releasedBy: { select: { fullName: true, role: true } },
       },
     });
 
-    if (!userMatch) {
-      // Validação determinística de hash da SIPAT 2026
-      if (code.startsWith('SENAI-SIPAT2026-MF-')) {
-        res.json({
-          valid: true,
-          verificationCode: code,
-          schoolName: config.schoolName,
-          institution: 'Serviço Nacional de Aprendizagem Industrial - SENAI-SP',
-          unit: 'Escola SENAI "Morvan Figueiredo" (Mooca)',
-          eventTitle: 'SIPAT 2026',
-          workloadHours: 20,
-          status: 'CERTIFICADO AUTÊNTICO E REGISTRADO',
-          verifiedAt: new Date().toISOString(),
-        });
-        return;
-      }
-      res.status(404).json({ valid: false, error: 'Código de certificado não localizado na base oficial.' });
+    if (!cert) {
+      res.status(404).json({
+        valid: false,
+        error: 'Certificado não localizado ou ainda pendente de homologação pela coordenação da Escola SENAI "Morvan Figueiredo".',
+      });
       return;
     }
 
     res.json({
       valid: true,
-      verificationCode: code,
-      studentName: userMatch.fullName,
-      registrationCode: userMatch.registrationCode,
-      classGroup: userMatch.classGroup ? `[${userMatch.classGroup.code}] ${userMatch.classGroup.name}` : 'Turma Técnica',
+      verificationCode: cert.verificationCode,
+      studentName: cert.user.fullName,
+      registrationCode: cert.user.registrationCode || 'ALUNO-SENAI',
+      classGroup: cert.user.classGroup
+        ? `[${cert.user.classGroup.code}] ${cert.user.classGroup.name}`
+        : 'Turma Técnica SENAI',
+      courseArea: cert.user.classGroup?.courseArea || 'Formação Profissional Técnica',
       schoolName: config.schoolName,
       unit: 'Escola SENAI "Morvan Figueiredo" (Mooca - São Paulo)',
-      workloadHours: 20,
-      totalPoints: userMatch.totalPoints,
-      badgesCount: userMatch.badges.length,
+      institution: 'Serviço Nacional de Aprendizagem Industrial - SENAI-SP',
+      eventTitle: 'SIPAT 2026',
+      workloadHours: cert.workloadHours || 20,
+      totalPoints: cert.totalPointsSnapshot,
+      approvedMissionsCount: cert.missionsSnapshot,
+      completedQuizzesCount: cert.quizzesSnapshot,
+      badgesCount: cert.user.badges.length,
+      releasedByName: cert.releasedBy?.fullName || 'Coordenação SIPAT / CIPA',
+      releasedAt: cert.releasedAt.toISOString(),
       eventDateLabel: '16 a 19 de Novembro de 2026',
       status: 'AUTENTICADO COM SUCESSO',
       verifiedAt: new Date().toISOString(),

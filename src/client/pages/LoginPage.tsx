@@ -74,29 +74,32 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col text-[#1E293B]">
       {/* Barra superior SENAI Mooca */}
       <div className="bg-[#1E293B] text-white border-b-2 border-[#E30613]">
-        <div className="max-w-xl mx-auto px-4 py-2 flex items-center justify-between text-xs">
-          <span className="font-bold uppercase tracking-wider text-[11px] text-white">
-            SENAI-SP • ESCOLA MORVAN FIGUEIREDO (MOOCA)
+        <div className="max-w-xl mx-auto px-4 py-1.5 sm:py-2 flex items-center justify-between text-xs">
+          <span className="font-bold uppercase tracking-wider text-[10px] sm:text-[11px] text-white truncate">
+            <span className="sm:hidden">SENAI Mooca • SIPAT 2026</span>
+            <span className="hidden sm:inline">SENAI-SP • ESCOLA MORVAN FIGUEIREDO</span>
           </span>
           <Link
             to="/"
-            className="text-slate-300 hover:text-white flex items-center gap-1 font-medium transition-colors"
+            className="text-slate-300 hover:text-white flex items-center gap-1 font-medium text-xs transition-colors shrink-0"
           >
             <ArrowLeft size={13} />
-            <span>Voltar ao Início</span>
+            <span>Voltar</span>
           </Link>
         </div>
       </div>
 
       {/* Header Institucional Branco */}
-      <header className="bg-white border-b border-slate-200/90 py-4 shadow-2xs">
+      <header className="bg-white border-b border-slate-200/90 py-3 sm:py-4 shadow-2xs">
         <div className="max-w-xl mx-auto px-4 flex items-center justify-between">
-          <InstitutionalBrand
-            officialLogoUrl={publicConfig?.officialLogoUrl}
-            schoolName={publicConfig?.schoolName}
-            variant="dark"
-            compact
-          />
+          <Link to="/">
+            <InstitutionalBrand
+              officialLogoUrl={publicConfig?.officialLogoUrl}
+              schoolName={publicConfig?.schoolName}
+              variant="dark"
+              compact
+            />
+          </Link>
         </div>
       </header>
 

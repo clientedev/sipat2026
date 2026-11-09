@@ -33,6 +33,9 @@ async function resetClean() {
   const deletedAudit = await prisma.auditLog.deleteMany({});
   console.log(`  ✔ Logs antigos de auditoria limpos: ${deletedAudit.count}`);
 
+  const deletedCerts = await prisma.certificate.deleteMany({});
+  console.log(`  ✔ Certificados emitidos limpos: ${deletedCerts.count}`);
+
   // 2. Remoção de todos os alunos/participantes fakes
   console.log('\n[2/6] Removendo contas de alunos e participantes fakes...');
   const deletedParticipants = await prisma.user.deleteMany({
@@ -218,3 +221,4 @@ resetClean()
   .finally(async () => {
     await prisma.$disconnect();
   });
+

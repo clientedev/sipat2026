@@ -31,13 +31,13 @@ export const InstitutionalBrand: React.FC<InstitutionalBrandProps> = ({
   const isLightText = variant === 'light';
 
   return (
-    <div className="flex items-center gap-3 select-none">
+    <div className="flex items-center gap-2 sm:gap-3 select-none min-w-0">
       <div className="relative shrink-0 flex items-center">
         <img
           src={effectiveSrc}
           alt="SENAI - Serviço Nacional de Aprendizagem Industrial"
           className={`${
-            compact ? 'h-7 sm:h-8' : 'h-8 sm:h-10'
+            compact ? 'h-6 sm:h-8' : 'h-7 sm:h-9 md:h-10'
           } w-auto object-contain transition-transform hover:scale-[1.02]`}
           onError={() => {
             if (effectiveSrc !== '/brand/senai-logo.png') {
@@ -47,17 +47,18 @@ export const InstitutionalBrand: React.FC<InstitutionalBrandProps> = ({
         />
       </div>
 
-      <div className="flex flex-col justify-center border-l border-slate-300/80 pl-3 leading-tight">
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col justify-center border-l border-slate-300/80 pl-2 sm:pl-3 leading-tight min-w-0">
+        <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
           <span
-            className={`font-display font-bold tracking-tight ${
-              compact ? 'text-xs sm:text-sm' : 'text-sm sm:text-base'
+            className={`font-display font-bold tracking-tight truncate ${
+              compact ? 'text-xs sm:text-sm' : 'text-xs sm:text-sm md:text-base'
             } ${isLightText ? 'text-white' : 'text-[#1E293B]'}`}
           >
-            {schoolName}
+            <span className="sm:hidden">SENAI Mooca</span>
+            <span className="hidden sm:inline">{schoolName}</span>
           </span>
           <span
-            className={`hidden sm:inline-block text-[10px] font-bold px-1.5 py-0.5 rounded ${
+            className={`hidden md:inline-block text-[10px] font-bold px-1.5 py-0.5 rounded ${
               isLightText
                 ? 'bg-white/20 text-white'
                 : 'bg-red-50 text-[#E30613] border border-red-200'
@@ -67,11 +68,12 @@ export const InstitutionalBrand: React.FC<InstitutionalBrandProps> = ({
           </span>
         </div>
         <span
-          className={`font-semibold tracking-wide uppercase text-[10px] sm:text-[11px] ${
+          className={`font-bold tracking-wide uppercase text-[9px] sm:text-[10px] md:text-[11px] truncate ${
             isLightText ? 'text-red-200' : 'text-[#E30613]'
           }`}
         >
-          SIPAT 2026 • 16 A 19 DE NOVEMBRO
+          <span className="sm:hidden">SIPAT 2026</span>
+          <span className="hidden sm:inline">SIPAT 2026 • 16 A 19 DE NOVEMBRO</span>
         </span>
       </div>
     </div>

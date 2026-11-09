@@ -118,6 +118,121 @@ async function main() {
   }
   console.log(`[SEED] ${classesData.length} turmas institucionais verificadas.`);
 
+  // 4.1. Laboratórios e Oficinas Didáticas da Escola SENAI "Morvan Figueiredo"
+  const labsData = [
+    {
+      code: 'LAB-TI-01',
+      name: 'Laboratório de Tecnologia da Informação e Redes',
+      description: 'Ambiente com estações computacionais de alto desempenho para desenvolvimento de software, infraestrutura de redes e segurança lógica.',
+      blockLocation: 'Bloco B, 2º Andar',
+      courseArea: 'Informática e TI',
+      nrsApplicable: 'NR-17 (Ergonomia), NR-10 (Instalações Elétricas)',
+      requiredEpis: 'Crachá institucional, calçado fechado antiderrapante',
+      capacity: 36,
+      classCodes: ['TEC-INF-1M', 'TEC-DEV-2T'],
+    },
+    {
+      code: 'LAB-CLI-01',
+      name: 'Oficina de Climatização, Refrigeração e HVAC',
+      description: 'Oficina prática equipada com bancadas frigoríficas, câmaras frias didáticas, estações de brasagem, vácuo e recolhimento de fluidos refrigerantes.',
+      blockLocation: 'Bloco C, Térreo',
+      courseArea: 'Climatização e Refrigeração',
+      nrsApplicable: 'NR-10, NR-12 (Máquinas), NR-13 (Pressão), NR-35 (Trabalho em Altura)',
+      requiredEpis: 'Óculos de proteção, calçado com biqueira de segurança, protetor auricular, luvas de proteção',
+      capacity: 28,
+      classCodes: ['TEC-CLI-1T', 'TEC-CLI-2N'],
+    },
+    {
+      code: 'LAB-LOG-01',
+      name: 'Centro de Práticas Logísticas e Armazenagem',
+      description: 'Espaço com porta-paletes estruturais, equipamentos de movimentação manual de carga e simulação de cadeia de suprimentos.',
+      blockLocation: 'Bloco A, Térreo',
+      courseArea: 'Logística e Transporte',
+      nrsApplicable: 'NR-11 (Movimentação e Armazenagem de Materiais), NR-17 (Ergonomia)',
+      requiredEpis: 'Colete refletivo de alta visibilidade, calçado de segurança com biqueira, luvas antiderrapantes',
+      capacity: 32,
+      classCodes: ['TEC-LOG-1M', 'TEC-LOG-2N', 'CAI-ADM-1M'],
+    },
+    {
+      code: 'LAB-ELE-01',
+      name: 'Laboratório de Eletroeletrônica e Automação Industrial',
+      description: 'Bancadas didáticas para montagem de comandos elétricos industriais, painéis com CLPs e inversores de frequência.',
+      blockLocation: 'Bloco B, 1º Andar',
+      courseArea: 'Eletroeletrônica',
+      nrsApplicable: 'NR-10 (Segurança em Eletricidade), NR-12 (Proteção de Máquinas)',
+      requiredEpis: 'Calçado isolante de segurança para eletricista, óculos de proteção incolor, jaleco anti-chama',
+      capacity: 30,
+      classCodes: ['CAI-ELE-1M'],
+    },
+    {
+      code: 'LAB-AUT-01',
+      name: 'Oficina de Mecânica e Manutenção Automotiva',
+      description: 'Elevadores automotivos pantográficos, bancadas de motores didáticos e área de ferramentaria mecânica pesada.',
+      blockLocation: 'Bloco D, Galpão Mecânico',
+      courseArea: 'Mecânica e Automotiva',
+      nrsApplicable: 'NR-12 (Máquinas), NR-20 (Inflamáveis), NR-26 (Sinalização)',
+      requiredEpis: 'Óculos de ampla visão, protetor auricular tipo concha, bota de segurança com bico de composite',
+      capacity: 24,
+      classCodes: ['CAI-AUT-1T'],
+    },
+    {
+      code: 'LAB-POSTOS-ADM',
+      name: 'Estação Integrada de Ergonomia e Ambientes Administrativos',
+      description: 'Espaço modelo de análise ergonômica com mobiliário regulável, suportes articulados e conformidade integral à NR-17.',
+      blockLocation: 'Bloco A, 1º Andar',
+      courseArea: 'Gestão e Administrativo',
+      nrsApplicable: 'NR-17 (Ergonomia nos Postos de Trabalho)',
+      requiredEpis: 'Crachá institucional, apoio lombar e descanso para punhos/pés',
+      capacity: 40,
+      classCodes: ['CAI-ADM-1M', 'COLAB-SENAI'],
+    },
+  ];
+
+  for (const lab of labsData) {
+    const upsertedLab = await prisma.laboratory.upsert({
+      where: { code: lab.code },
+      update: {
+        name: lab.name,
+        description: lab.description,
+        blockLocation: lab.blockLocation,
+        courseArea: lab.courseArea,
+        nrsApplicable: lab.nrsApplicable,
+        requiredEpis: lab.requiredEpis,
+        capacity: lab.capacity,
+      },
+      create: {
+        code: lab.code,
+        name: lab.name,
+        description: lab.description,
+        blockLocation: lab.blockLocation,
+        courseArea: lab.courseArea,
+        nrsApplicable: lab.nrsApplicable,
+        requiredEpis: lab.requiredEpis,
+        capacity: lab.capacity,
+      },
+    });
+
+    for (const code of lab.classCodes) {
+      const cls = await prisma.classGroup.findUnique({ where: { code } });
+      if (cls) {
+        await prisma.laboratoryClassGroup.upsert({
+          where: {
+            laboratoryId_classGroupId: {
+              laboratoryId: upsertedLab.id,
+              classGroupId: cls.id,
+            },
+          },
+          update: {},
+          create: {
+            laboratoryId: upsertedLab.id,
+            classGroupId: cls.id,
+          },
+        });
+      }
+    }
+  }
+  console.log(`[SEED] ${labsData.length} laboratórios didáticos oficiais verificados e vinculados às turmas.`);
+
   // 5. Medalhas e Conquistas Gamificadas
   const badgesData = [
     {
@@ -574,6 +689,38 @@ async function main() {
       await prisma.mission.create({ data: m });
     }
   }
+
+  // Vinculação pedagógica e contextual de laboratórios às missões práticas
+  const labCli = await prisma.laboratory.findUnique({ where: { code: 'LAB-CLI-01' } });
+  const labPostos = await prisma.laboratory.findUnique({ where: { code: 'LAB-POSTOS-ADM' } });
+
+  if (labCli) {
+    await prisma.mission.updateMany({
+      where: { slug: { in: ['encontre-os-7-erros', 'tecnico-seguro'] }, laboratoryId: null },
+      data: { laboratoryId: labCli.id },
+    });
+
+    const missionTecnico = await prisma.mission.findUnique({ where: { slug: 'tecnico-seguro' } });
+    const turmaCli1 = await prisma.classGroup.findUnique({ where: { code: 'TEC-CLI-1T' } });
+    const turmaCli2 = await prisma.classGroup.findUnique({ where: { code: 'TEC-CLI-2N' } });
+    if (missionTecnico && turmaCli1 && turmaCli2) {
+      await prisma.missionTargetClass.createMany({
+        data: [
+          { missionId: missionTecnico.id, classGroupId: turmaCli1.id },
+          { missionId: missionTecnico.id, classGroupId: turmaCli2.id },
+        ],
+        skipDuplicates: true,
+      });
+    }
+  }
+
+  if (labPostos) {
+    await prisma.mission.updateMany({
+      where: { slug: 'estacao-ergonomica', laboratoryId: null },
+      data: { laboratoryId: labPostos.id },
+    });
+  }
+
   console.log(`[SEED] ${missionsData.length} missões da programação oficial verificadas.`);
 
   // 7. Quizzes Educativos e Banco Inicial de Questões Técnicas

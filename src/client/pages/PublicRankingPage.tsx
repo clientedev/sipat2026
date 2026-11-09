@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
+  ArrowLeft,
   Award,
   BarChart3,
   CheckCircle2,
@@ -171,101 +172,104 @@ export const PublicRankingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#0B1528] text-white flex flex-col">
       {/* Topo Institucional de Alto Contraste para Telões e Projetores */}
-      <header className="bg-[#1E293B] border-b-4 border-[#E30613] shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-          <InstitutionalBrand
-            officialLogoUrl={data?.officialLogoUrl ? '/api/media/brand' : null}
-            schoolName={data?.schoolName || 'Escola SENAI "Morvan Figueiredo"'}
-            variant="light"
-          />
+      <header className="bg-[#1E293B] border-b-4 border-[#E30613] shadow-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-3">
+          <Link to="/" className="shrink-0 min-w-0">
+            <InstitutionalBrand
+              officialLogoUrl={data?.officialLogoUrl ? '/api/media/brand' : null}
+              schoolName={data?.schoolName || 'Escola SENAI "Morvan Figueiredo"'}
+              variant="light"
+              compact
+            />
+          </Link>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 bg-[#0F172A]/80 border border-emerald-500/40 px-3 py-1.5 rounded text-xs font-mono-tech">
-              <Radio size={14} className={connected ? 'text-emerald-400 animate-pulse' : 'text-amber-400'} />
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 flex-wrap justify-end">
+            <div className="inline-flex items-center gap-1.5 bg-[#0F172A]/80 border border-emerald-500/40 px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[10px] sm:text-xs font-mono-tech">
+              <Radio size={12} className={connected ? 'text-emerald-400 animate-pulse' : 'text-amber-400'} />
               <span className="text-emerald-300 font-semibold">
-                {connected ? 'TEMPO REAL ATIVO' : 'SINCRONIZANDO'}
+                <span className="xs:hidden">AO VIVO</span>
+                <span className="hidden xs:inline">{connected ? 'TEMPO REAL ATIVO' : 'SINCRONIZANDO'}</span>
               </span>
             </div>
 
             <button
               type="button"
               onClick={() => setAutoRotate((v) => !v)}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded text-xs font-semibold border cursor-pointer ${
+              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[11px] sm:text-xs font-semibold border cursor-pointer transition-colors ${
                 autoRotate
                   ? 'bg-[#FFB800] text-[#0F172A] border-[#FFB800]'
                   : 'bg-white/10 text-white border-white/25 hover:bg-white/20'
               }`}
+              title="Alternância automática de abas"
             >
-              {autoRotate ? <Pause size={14} /> : <Play size={14} />}
-              <span>{autoRotate ? 'Alternância Automática ON' : 'Alternar Abas Auto'}</span>
+              {autoRotate ? <Pause size={12} /> : <Play size={12} />}
+              <span className="hidden sm:inline">{autoRotate ? 'Auto ON' : 'Auto OFF'}</span>
             </button>
 
             <button
               type="button"
               onClick={toggleTvMode}
-              className="inline-flex items-center gap-1.5 bg-[#0F172A] hover:bg-slate-900 border border-[#FFB800] text-[#FFB800] px-3.5 py-2 rounded text-xs font-bold uppercase tracking-wider cursor-pointer"
+              className="inline-flex items-center gap-1 sm:gap-1.5 bg-[#0F172A] hover:bg-slate-900 border border-[#FFB800] text-[#FFB800] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded text-[11px] sm:text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors"
             >
-              {isFullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
-              <span>{isFullscreen ? 'Sair da Tela Cheia' : 'Modo TV / Projetor'}</span>
+              {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+              <span className="hidden xs:inline">{isFullscreen ? 'Sair TV' : 'Modo TV'}</span>
             </button>
 
-            {!isFullscreen && (
-              <Link
-                to="/acompanhamento"
-                className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded text-xs font-semibold"
-              >
-                <BarChart3 size={14} />
-                <span>Indicadores</span>
-              </Link>
-            )}
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1 bg-white/10 hover:bg-white/20 text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded text-[11px] sm:text-xs font-semibold transition-colors"
+            >
+              <ArrowLeft size={13} />
+              <span className="hidden sm:inline">Início</span>
+            </Link>
           </div>
         </div>
       </header>
 
       {/* Barra de Métricas Rápidas */}
       <div className="bg-[#0F1E3A] border-b border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="flex items-center gap-3">
-            <Users className="text-[#FFB800]" size={22} />
-            <div>
-              <div className="text-xl font-condensed font-extrabold tabular-nums">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3 grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 p-1">
+            <Users className="text-[#FFB800] shrink-0" size={18} />
+            <div className="min-w-0">
+              <div className="text-base sm:text-xl font-condensed font-extrabold tabular-nums truncate">
                 {data?.summary.totalParticipants ?? 0}
               </div>
-              <div className="text-[11px] uppercase tracking-wider text-slate-400">
-                Participantes Inscritos
+              <div className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 truncate">
+                Inscritos
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Award className="text-sky-400" size={22} />
-            <div>
-              <div className="text-xl font-condensed font-extrabold tabular-nums">
+          <div className="flex items-center gap-2 sm:gap-3 p-1">
+            <Award className="text-sky-400 shrink-0" size={18} />
+            <div className="min-w-0">
+              <div className="text-base sm:text-xl font-condensed font-extrabold tabular-nums truncate">
                 {data?.summary.activeClasses ?? 0} / {data?.summary.totalClasses ?? 0}
               </div>
-              <div className="text-[11px] uppercase tracking-wider text-slate-400">
-                Turmas Pontuando
+              <div className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 truncate">
+                Turmas Ativas
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="text-emerald-400" size={22} />
-            <div>
-              <div className="text-xl font-condensed font-extrabold tabular-nums">
+          <div className="flex items-center gap-2 sm:gap-3 p-1">
+            <CheckCircle2 className="text-emerald-400 shrink-0" size={18} />
+            <div className="min-w-0">
+              <div className="text-base sm:text-xl font-condensed font-extrabold tabular-nums truncate">
                 {data?.summary.totalCompletedActivities ?? 0}
               </div>
-              <div className="text-[11px] uppercase tracking-wider text-slate-400">
-                Atividades Concluídas
+              <div className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 truncate">
+                Atividades
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Trophy className="text-[#FFB800]" size={22} />
-            <div>
-              <div className="text-xl font-condensed font-extrabold tabular-nums text-[#FFB800]">
+          <div className="flex items-center gap-2 sm:gap-3 p-1">
+            <Trophy className="text-[#FFB800] shrink-0" size={18} />
+            <div className="min-w-0">
+              <div className="text-base sm:text-xl font-condensed font-extrabold tabular-nums text-[#FFB800] truncate">
                 {data?.summary.totalPointsAccumulated ?? 0} PTS
               </div>
-              <div className="text-[11px] uppercase tracking-wider text-slate-400">
-                Pontuação Acumulada
+              <div className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 truncate">
+                Pontos
               </div>
             </div>
           </div>
@@ -273,29 +277,31 @@ export const PublicRankingPage: React.FC = () => {
       </div>
 
       {/* Seletor de Painel */}
-      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 pt-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex rounded-md bg-[#132342] p-1 border border-slate-700">
-          {[
-            { id: 'individual', label: 'Ranking Individual' },
-            { id: 'classes', label: 'Ranking por Turmas' },
-            { id: 'highlights', label: 'Destaques do Dia' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveSlide(tab.id as TvSlide)}
-              className={`px-4 py-2 rounded text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                activeSlide === tab.id
-                  ? 'bg-[#E30613] text-white border border-red-500 shadow-sm'
-                  : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="overflow-x-auto scrollbar-none w-full sm:w-auto pb-1 sm:pb-0">
+          <div className="inline-flex rounded-md bg-[#132342] p-1 border border-slate-700 shrink-0">
+            {[
+              { id: 'individual', label: 'Ranking Individual' },
+              { id: 'classes', label: 'Ranking por Turmas' },
+              { id: 'highlights', label: 'Destaques do Dia' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveSlide(tab.id as TvSlide)}
+                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer shrink-0 ${
+                  activeSlide === tab.id
+                    ? 'bg-[#E30613] text-white border border-red-500 shadow-sm'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        <p className="text-xs font-mono-tech text-slate-400">
+        <p className="text-xs font-mono-tech text-slate-400 hidden md:block">
           {data?.eventTheme} • <span className="text-[#FFB800]">{data?.eventSlogan}</span>
         </p>
       </div>

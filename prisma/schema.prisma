@@ -130,8 +130,10 @@ model ClassGroup {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  users       User[]
-  submissions MissionSubmission[]
+  users          User[]
+  submissions    MissionSubmission[]
+  laboratories   LaboratoryClassGroup[]
+  targetMissions MissionTargetClass[]
 
   @@index([isActive])
 }
@@ -175,14 +177,16 @@ model User {
   pushSubscriptions    PushSubscription[]
   actorAuditLogs       AuditLog[]           @relation("AuditActor")
   targetAuditLogs      AuditLog[]           @relation("AuditTarget")
+  certificate          Certificate?         @relation("UserCertificate")
+  issuedCertificates   Certificate[]        @relation("CertificateIssuer")
 
   @@index([role, isActive, totalPoints(sort: Desc)])
   @@index([classGroupId])
 }
 
 model Mission {
-  id                 String            @id @default(uuid())
-  slug               String            @unique
+  id                 String               @id @default(uuid())
+  slug               String               @unique
   title              String
   summary            String
   description        String
@@ -191,31 +195,35 @@ model Mission {
   safetyNotice       String?
   bannerUrl          String?
   category           String
-  difficulty         MissionDifficulty @default(INTERMEDIATE)
-  participationMode  ParticipationMode @default(INDIVIDUAL)
-  submissionType     SubmissionType    @default(PHOTO)
-  eventDay           Int               @default(1)
-  eventDateLabel     String            @default("16/11/2026")
-  status             ActivityStatus    @default(DRAFT)
+  difficulty         MissionDifficulty    @default(INTERMEDIATE)
+  participationMode  ParticipationMode    @default(INDIVIDUAL)
+  submissionType     SubmissionType       @default(PHOTO)
+  eventDay           Int                  @default(1)
+  eventDateLabel     String               @default("16/11/2026")
+  status             ActivityStatus       @default(DRAFT)
   opensAt            DateTime?
   closesAt           DateTime?
   publishedAt        DateTime?
-  points             Int               @default(50)
-  requiresPhoto      Boolean           @default(false)
-  requiresVideo      Boolean           @default(false)
-  requiresText       Boolean           @default(true)
-  requiresApproval   Boolean           @default(true)
-  isFeatured         Boolean           @default(false)
+  points             Int                  @default(50)
+  requiresPhoto      Boolean              @default(false)
+  requiresVideo      Boolean              @default(false)
+  requiresText       Boolean              @default(true)
+  requiresApproval   Boolean              @default(true)
+  isFeatured         Boolean              @default(false)
   configJson         Json?
-  sortOrder          Int               @default(0)
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  sortOrder          Int                  @default(0)
+  laboratoryId       String?
+  laboratory         Laboratory?          @relation(fields: [laboratoryId], references: [id], onDelete: SetNull)
+  targetClassGroups  MissionTargetClass[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   submissions MissionSubmission[]
 
   @@index([status, eventDay, sortOrder])
   @@index([status, opensAt])
   @@index([status, closesAt])
+  @@index([laboratoryId])
 }
 
 model MissionSubmission {
@@ -414,5 +422,71 @@ model AuditLog {
   @@index([createdAt(sort: Desc)])
   @@index([entityType, entityId])
   @@index([targetUserId])
+}
+
+model Laboratory {
+  id            String                 @id @default(uuid())
+  code          String                 @unique
+  name          String
+  description   String?
+  blockLocation String                 @default("Bloco Principal")
+  courseArea    String                 @default("Geral")
+  nrsApplicable String?
+  requiredEpis  String?
+  capacity      Int                    @default(32)
+  isActive      Boolean                @default(true)
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+
+  missions      Mission[]
+  classGroups   LaboratoryClassGroup[]
+
+  @@index([isActive, courseArea])
+}
+
+model LaboratoryClassGroup {
+  id           String     @id @default(uuid())
+  laboratoryId String
+  laboratory   Laboratory @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  classGroupId String
+  classGroup   ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([laboratoryId, classGroupId])
+  @@index([laboratoryId])
+  @@index([classGroupId])
+}
+
+model MissionTargetClass {
+  id           String     @id @default(uuid())
+  missionId    String
+  mission      Mission    @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  classGroupId String
+  classGroup   ClassGroup @relation(fields: [classGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, classGroupId])
+  @@index([missionId])
+  @@index([classGroupId])
+}
+
+model Certificate {
+  id                  String    @id @default(uuid())
+  verificationCode    String    @unique
+  userId              String    @unique
+  user                User      @relation("UserCertificate", fields: [userId], references: [id], onDelete: Cascade)
+  releasedById        String?
+  releasedBy          User?     @relation("CertificateIssuer", fields: [releasedById], references: [id], onDelete: SetNull)
+  releasedAt          DateTime  @default(now())
+  workloadHours       Int       @default(20)
+  totalPointsSnapshot Int       @default(0)
+  missionsSnapshot    Int       @default(0)
+  quizzesSnapshot     Int       @default(0)
+  status              String    @default("ISSUED")
+  metadata            Json?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([verificationCode])
+  @@index([status])
 }
 

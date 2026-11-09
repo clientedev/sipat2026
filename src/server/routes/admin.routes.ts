@@ -600,6 +600,133 @@ adminRouter.patch('/classes/:id', requireRoles(...ADMIN_ROLES), async (req, res,
 });
 
 // ============================================================================
+// 4.1. GERENCIAMENTO DE LABORATÓRIOS E OFICINAS DIDÁTICAS (SENAI MOOCA)
+// ============================================================================
+const laboratoryInputSchema = z.object({
+  code: z.string().trim().min(2).max(30),
+  name: z.string().trim().min(3).max(120),
+  description: z.string().trim().optional().nullable(),
+  blockLocation: z.string().trim().min(2).max(80),
+  courseArea: z.string().trim().min(2).max(80),
+  nrsApplicable: z.string().trim().optional().nullable(),
+  requiredEpis: z.string().trim().optional().nullable(),
+  capacity: z.coerce.number().int().min(1).max(200).default(32),
+  isActive: z.boolean().optional(),
+  classGroupIds: z.array(z.string()).optional().default([]),
+});
+
+adminRouter.get('/laboratories', requireRoles(...STAFF_ROLES), async (_req, res, next) => {
+  try {
+    const laboratories = await prisma.laboratory.findMany({
+      include: {
+        classGroups: {
+          include: {
+            classGroup: { select: { id: true, code: true, name: true, courseArea: true, shift: true } },
+          },
+        },
+        _count: { select: { missions: true } },
+      },
+      orderBy: { name: 'asc' },
+    });
+    res.json({ laboratories });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.post('/laboratories', requireRoles(...ADMIN_ROLES), async (req, res, next) => {
+  try {
+    const parsed = laboratoryInputSchema.parse(req.body);
+    const code = parsed.code.toUpperCase().replace(/\s+/g, '-');
+    const created = await prisma.laboratory.create({
+      data: {
+        code,
+        name: parsed.name,
+        description: parsed.description || null,
+        blockLocation: parsed.blockLocation,
+        courseArea: parsed.courseArea,
+        nrsApplicable: parsed.nrsApplicable || null,
+        requiredEpis: parsed.requiredEpis || null,
+        capacity: parsed.capacity,
+        isActive: parsed.isActive ?? true,
+        classGroups: {
+          create: parsed.classGroupIds.map((cgId) => ({ classGroupId: cgId })),
+        },
+      },
+      include: {
+        classGroups: { include: { classGroup: true } },
+        _count: { select: { missions: true } },
+      },
+    });
+
+    await recordAuditLog({
+      actorId: req.authUser!.id,
+      actorRole: req.authUser!.role,
+      action: 'LABORATORY_CREATED',
+      entityType: 'Laboratory',
+      entityId: created.id,
+      metadata: { code: created.code, name: created.name },
+      ipAddress: req.ip,
+    });
+
+    res.status(201).json({ laboratory: created });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.patch('/laboratories/:id', requireRoles(...ADMIN_ROLES), async (req, res, next) => {
+  try {
+    const id = String(req.params.id || '');
+    const parsed = laboratoryInputSchema.partial().parse(req.body);
+
+    const updated = await prisma.$transaction(async (tx) => {
+      if (parsed.classGroupIds !== undefined) {
+        await tx.laboratoryClassGroup.deleteMany({ where: { laboratoryId: id } });
+        if (parsed.classGroupIds.length > 0) {
+          await tx.laboratoryClassGroup.createMany({
+            data: parsed.classGroupIds.map((cgId) => ({ laboratoryId: id, classGroupId: cgId })),
+          });
+        }
+      }
+
+      return tx.laboratory.update({
+        where: { id },
+        data: {
+          ...(parsed.code ? { code: parsed.code.toUpperCase().replace(/\s+/g, '-') } : {}),
+          ...(parsed.name !== undefined ? { name: parsed.name } : {}),
+          ...(parsed.description !== undefined ? { description: parsed.description } : {}),
+          ...(parsed.blockLocation !== undefined ? { blockLocation: parsed.blockLocation } : {}),
+          ...(parsed.courseArea !== undefined ? { courseArea: parsed.courseArea } : {}),
+          ...(parsed.nrsApplicable !== undefined ? { nrsApplicable: parsed.nrsApplicable } : {}),
+          ...(parsed.requiredEpis !== undefined ? { requiredEpis: parsed.requiredEpis } : {}),
+          ...(parsed.capacity !== undefined ? { capacity: parsed.capacity } : {}),
+          ...(parsed.isActive !== undefined ? { isActive: parsed.isActive } : {}),
+        },
+        include: {
+          classGroups: { include: { classGroup: true } },
+          _count: { select: { missions: true } },
+        },
+      });
+    });
+
+    res.json({ laboratory: updated });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.delete('/laboratories/:id', requireRoles(...ADMIN_ROLES), async (req, res, next) => {
+  try {
+    const id = String(req.params.id || '');
+    await prisma.laboratory.delete({ where: { id } });
+    res.json({ ok: true, deletedId: id });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ============================================================================
 // 5. GERENCIAMENTO DE PARTICIPANTES, CADASTRO MANUAL E IMPORTAÇÃO POR PLANILHA
 // ============================================================================
 adminRouter.get('/participants', requireRoles(...ADMIN_ROLES), async (req, res, next) => {
@@ -965,12 +1092,234 @@ adminRouter.post(
 );
 
 // ============================================================================
+// 5.2. HOMOLOGAÇÃO E DISPARO DE CERTIFICADOS OFICIAIS (20 HORAS)
+// ============================================================================
+adminRouter.get('/certificates/candidates', requireRoles(...STAFF_ROLES), async (req, res, next) => {
+  try {
+    const search = req.query.search ? String(req.query.search).trim() : '';
+    const classGroupId = req.query.classGroupId ? String(req.query.classGroupId) : '';
+    const statusFilter = req.query.status ? String(req.query.status) : 'ALL'; // 'ALL', 'PENDING', 'RELEASED', 'ELIGIBLE'
+
+    const where: Prisma.UserWhereInput = {
+      role: Role.PARTICIPANT,
+      anonymizedAt: null,
+    };
+
+    if (classGroupId) where.classGroupId = classGroupId;
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { registrationCode: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [participants, totalMissionsCount, totalQuizzesCount] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        include: {
+          classGroup: { select: { id: true, code: true, name: true, courseArea: true, shift: true } },
+          certificate: {
+            include: { releasedBy: { select: { fullName: true } } },
+          },
+          submissions: {
+            where: { status: SubmissionStatus.APPROVED },
+            select: { id: true, awardedPoints: true },
+          },
+          quizAttempts: {
+            where: { completedAt: { not: null } },
+            select: { id: true, scorePercent: true, awardedPoints: true },
+          },
+          badges: { select: { id: true } },
+        },
+        orderBy: [{ totalPoints: 'desc' }, { fullName: 'asc' }],
+      }),
+      prisma.mission.count({ where: { status: { in: [ActivityStatus.PUBLISHED, ActivityStatus.CLOSED] } } }),
+      prisma.quiz.count({ where: { status: { in: [ActivityStatus.PUBLISHED, ActivityStatus.CLOSED] } } }),
+    ]);
+
+    const candidates = participants.map((p) => {
+      const approvedMissions = p.submissions.length;
+      const completedQuizzes = p.quizAttempts.length;
+      const avgQuizScore = completedQuizzes > 0
+        ? Math.round(p.quizAttempts.reduce((acc, q) => acc + q.scorePercent, 0) / completedQuizzes)
+        : 0;
+
+      const totalActivitiesTarget = Math.max(1, totalMissionsCount + totalQuizzesCount);
+      const userTotalActivities = approvedMissions + completedQuizzes;
+      const progressPercent = Math.min(100, Math.round((userTotalActivities / totalActivitiesTarget) * 100));
+
+      const isReleased = Boolean(p.certificate && p.certificate.status === 'ISSUED');
+      const isEligible = progressPercent >= 30 || approvedMissions >= 1 || p.totalPoints >= 30;
+
+      return {
+        id: p.id,
+        fullName: p.fullName,
+        email: p.email,
+        registrationCode: p.registrationCode || 'ALUNO-SENAI',
+        classGroup: p.classGroup,
+        totalPoints: p.totalPoints,
+        level: p.level,
+        approvedMissions,
+        totalMissionsCount,
+        completedQuizzes,
+        totalQuizzesCount,
+        avgQuizScore,
+        badgesCount: p.badges.length,
+        progressPercent,
+        isReleased,
+        isEligible,
+        certificate: p.certificate
+          ? {
+              id: p.certificate.id,
+              verificationCode: p.certificate.verificationCode,
+              releasedAt: p.certificate.releasedAt.toISOString(),
+              releasedByName: p.certificate.releasedBy?.fullName || 'Coordenação SIPAT',
+              workloadHours: p.certificate.workloadHours,
+              status: p.certificate.status,
+            }
+          : null,
+      };
+    });
+
+    const filtered = candidates.filter((c) => {
+      if (statusFilter === 'RELEASED') return c.isReleased;
+      if (statusFilter === 'PENDING') return !c.isReleased;
+      if (statusFilter === 'ELIGIBLE') return !c.isReleased && c.isEligible;
+      return true;
+    });
+
+    const summary = {
+      totalCandidates: candidates.length,
+      releasedCount: candidates.filter((c) => c.isReleased).length,
+      pendingCount: candidates.filter((c) => !c.isReleased).length,
+      eligibleCount: candidates.filter((c) => !c.isReleased && c.isEligible).length,
+      averageProgress: candidates.length > 0
+        ? Math.round(candidates.reduce((acc, c) => acc + c.progressPercent, 0) / candidates.length)
+        : 0,
+    };
+
+    res.json({ candidates: filtered, summary });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.post('/certificates/release', requireRoles(...ADMIN_ROLES), async (req, res, next) => {
+  try {
+    const userIds = Array.isArray(req.body.userIds) ? (req.body.userIds as string[]) : [];
+    if (userIds.length === 0) {
+      res.status(400).json({ error: 'Nenhum participante selecionado para liberação de certificado.' });
+      return;
+    }
+
+    const participants = await prisma.user.findMany({
+      where: { id: { in: userIds }, role: Role.PARTICIPANT },
+      include: {
+        submissions: { where: { status: SubmissionStatus.APPROVED } },
+        quizAttempts: { where: { completedAt: { not: null } } },
+        certificate: true,
+      },
+    });
+
+    const issuerId = req.authUser!.id;
+    let releasedCount = 0;
+
+    for (const p of participants) {
+      const hash = crypto.randomBytes(4).toString('hex').toUpperCase();
+      const code = `SENAI-SIPAT2026-MF-${hash}`;
+
+      await prisma.certificate.upsert({
+        where: { userId: p.id },
+        update: {
+          status: 'ISSUED',
+          releasedById: issuerId,
+          releasedAt: new Date(),
+          workloadHours: 20,
+          totalPointsSnapshot: p.totalPoints,
+          missionsSnapshot: p.submissions.length,
+          quizzesSnapshot: p.quizAttempts.length,
+        },
+        create: {
+          verificationCode: code,
+          userId: p.id,
+          releasedById: issuerId,
+          releasedAt: new Date(),
+          workloadHours: 20,
+          totalPointsSnapshot: p.totalPoints,
+          missionsSnapshot: p.submissions.length,
+          quizzesSnapshot: p.quizAttempts.length,
+          status: 'ISSUED',
+        },
+      });
+
+      // Notifica o participante em tempo real
+      await createNotification({
+        userId: p.id,
+        type: NotificationType.SYSTEM,
+        title: 'Certificado Oficial SIPAT 2026 Liberado!',
+        message: 'A coordenação pedagógica homologou suas 20 horas de formação em prevenção e segurança do trabalho. Seu certificado já está disponível para emissão e download!',
+        linkUrl: '/app',
+      });
+
+      releasedCount++;
+    }
+
+    await recordAuditLog({
+      actorId: req.authUser!.id,
+      actorRole: req.authUser!.role,
+      action: 'CERTIFICATES_RELEASED',
+      entityType: 'Certificate',
+      metadata: { targetCount: userIds.length, releasedCount },
+      ipAddress: req.ip,
+    });
+
+    res.json({ ok: true, releasedCount });
+  } catch (err) {
+    next(err);
+  }
+});
+
+adminRouter.post('/certificates/revoke', requireRoles(...ADMIN_ROLES), async (req, res, next) => {
+  try {
+    const userIds = Array.isArray(req.body.userIds) ? (req.body.userIds as string[]) : [];
+    if (userIds.length === 0) {
+      res.status(400).json({ error: 'Nenhum participante selecionado.' });
+      return;
+    }
+
+    const { count } = await prisma.certificate.deleteMany({
+      where: { userId: { in: userIds } },
+    });
+
+    await recordAuditLog({
+      actorId: req.authUser!.id,
+      actorRole: req.authUser!.role,
+      action: 'CERTIFICATES_REVOKED',
+      entityType: 'Certificate',
+      metadata: { targetCount: userIds.length, revokedCount: count },
+      ipAddress: req.ip,
+    });
+
+    res.json({ ok: true, revokedCount: count });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ============================================================================
 // 6. GERENCIAMENTO COMPLETO DE MISSÕES & AGENDADOR (ADMIN, SUPER_ADMIN)
 // ============================================================================
 adminRouter.get('/missions', requireRoles(...STAFF_ROLES), async (_req, res, next) => {
   try {
     const missions = await prisma.mission.findMany({
       include: {
+        laboratory: true,
+        targetClassGroups: {
+          include: {
+            classGroup: { select: { id: true, code: true, name: true, courseArea: true } },
+          },
+        },
         _count: { select: { submissions: true } },
       },
       orderBy: [{ eventDay: 'asc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }],
@@ -1006,6 +1355,8 @@ const missionInputSchema = z.object({
   isFeatured: z.boolean().default(false),
   configJson: z.any().optional().nullable(),
   sortOrder: z.coerce.number().int().default(0),
+  laboratoryId: z.string().trim().optional().nullable(),
+  targetClassGroupIds: z.array(z.string()).optional().default([]),
 });
 
 adminRouter.post('/missions', requireRoles(...ADMIN_ROLES), async (req, res, next) => {
@@ -1042,6 +1393,14 @@ adminRouter.post('/missions', requireRoles(...ADMIN_ROLES), async (req, res, nex
         isFeatured: parsed.isFeatured,
         configJson: parsed.configJson ?? Prisma.JsonNull,
         sortOrder: parsed.sortOrder,
+        laboratoryId: parsed.laboratoryId || null,
+        targetClassGroups: {
+          create: (parsed.targetClassGroupIds || []).map((cgId) => ({ classGroupId: cgId })),
+        },
+      },
+      include: {
+        laboratory: true,
+        targetClassGroups: { include: { classGroup: true } },
       },
     });
 
@@ -1063,7 +1422,7 @@ adminRouter.post('/missions', requireRoles(...ADMIN_ROLES), async (req, res, nex
       action: 'MISSION_CREATED',
       entityType: 'Mission',
       entityId: created.id,
-      metadata: { title: created.title, status: created.status, points: created.points },
+      metadata: { title: created.title, status: created.status, points: created.points, laboratoryId: created.laboratoryId },
       ipAddress: req.ip,
     });
 
@@ -1079,54 +1438,70 @@ adminRouter.patch('/missions/:id', requireRoles(...ADMIN_ROLES), async (req, res
     const previous = await prisma.mission.findUniqueOrThrow({ where: { id } });
     const parsed = missionInputSchema.partial().parse(req.body);
 
-    const updated = await prisma.mission.update({
-      where: { id },
-      data: {
-        ...(parsed.title !== undefined ? { title: parsed.title } : {}),
-        ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
-        ...(parsed.description !== undefined ? { description: parsed.description } : {}),
-        ...(parsed.instructions !== undefined ? { instructions: parsed.instructions } : {}),
-        ...(parsed.evaluationCriteria !== undefined
-          ? { evaluationCriteria: parsed.evaluationCriteria }
-          : {}),
-        ...(parsed.safetyNotice !== undefined ? { safetyNotice: parsed.safetyNotice } : {}),
-        ...(parsed.bannerUrl !== undefined ? { bannerUrl: parsed.bannerUrl } : {}),
-        ...(parsed.category !== undefined ? { category: parsed.category } : {}),
-        ...(parsed.difficulty !== undefined ? { difficulty: parsed.difficulty } : {}),
-        ...(parsed.participationMode !== undefined
-          ? { participationMode: parsed.participationMode }
-          : {}),
-        ...(parsed.submissionType !== undefined ? { submissionType: parsed.submissionType } : {}),
-        ...(parsed.eventDay !== undefined ? { eventDay: parsed.eventDay } : {}),
-        ...(parsed.eventDateLabel !== undefined ? { eventDateLabel: parsed.eventDateLabel } : {}),
-        ...(parsed.status !== undefined
-          ? {
-              status: parsed.status,
-              publishedAt:
-                parsed.status === ActivityStatus.PUBLISHED && !previous.publishedAt
-                  ? new Date()
-                  : previous.publishedAt,
-            }
-          : {}),
-        ...(parsed.opensAt !== undefined
-          ? { opensAt: parsed.opensAt ? new Date(parsed.opensAt) : null }
-          : {}),
-        ...(parsed.closesAt !== undefined
-          ? { closesAt: parsed.closesAt ? new Date(parsed.closesAt) : null }
-          : {}),
-        ...(parsed.points !== undefined ? { points: parsed.points } : {}),
-        ...(parsed.requiresPhoto !== undefined ? { requiresPhoto: parsed.requiresPhoto } : {}),
-        ...(parsed.requiresVideo !== undefined ? { requiresVideo: parsed.requiresVideo } : {}),
-        ...(parsed.requiresText !== undefined ? { requiresText: parsed.requiresText } : {}),
-        ...(parsed.requiresApproval !== undefined
-          ? { requiresApproval: parsed.requiresApproval }
-          : {}),
-        ...(parsed.isFeatured !== undefined ? { isFeatured: parsed.isFeatured } : {}),
-        ...(parsed.configJson !== undefined
-          ? { configJson: parsed.configJson ?? Prisma.JsonNull }
-          : {}),
-        ...(parsed.sortOrder !== undefined ? { sortOrder: parsed.sortOrder } : {}),
-      },
+    const updated = await prisma.$transaction(async (tx) => {
+      if (parsed.targetClassGroupIds !== undefined) {
+        await tx.missionTargetClass.deleteMany({ where: { missionId: id } });
+        if (parsed.targetClassGroupIds.length > 0) {
+          await tx.missionTargetClass.createMany({
+            data: parsed.targetClassGroupIds.map((cgId) => ({ missionId: id, classGroupId: cgId })),
+          });
+        }
+      }
+
+      return tx.mission.update({
+        where: { id },
+        data: {
+          ...(parsed.title !== undefined ? { title: parsed.title } : {}),
+          ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
+          ...(parsed.description !== undefined ? { description: parsed.description } : {}),
+          ...(parsed.instructions !== undefined ? { instructions: parsed.instructions } : {}),
+          ...(parsed.evaluationCriteria !== undefined
+            ? { evaluationCriteria: parsed.evaluationCriteria }
+            : {}),
+          ...(parsed.safetyNotice !== undefined ? { safetyNotice: parsed.safetyNotice } : {}),
+          ...(parsed.bannerUrl !== undefined ? { bannerUrl: parsed.bannerUrl } : {}),
+          ...(parsed.category !== undefined ? { category: parsed.category } : {}),
+          ...(parsed.difficulty !== undefined ? { difficulty: parsed.difficulty } : {}),
+          ...(parsed.participationMode !== undefined
+            ? { participationMode: parsed.participationMode }
+            : {}),
+          ...(parsed.submissionType !== undefined ? { submissionType: parsed.submissionType } : {}),
+          ...(parsed.eventDay !== undefined ? { eventDay: parsed.eventDay } : {}),
+          ...(parsed.eventDateLabel !== undefined ? { eventDateLabel: parsed.eventDateLabel } : {}),
+          ...(parsed.status !== undefined
+            ? {
+                status: parsed.status,
+                publishedAt:
+                  parsed.status === ActivityStatus.PUBLISHED && !previous.publishedAt
+                    ? new Date()
+                    : previous.publishedAt,
+              }
+            : {}),
+          ...(parsed.opensAt !== undefined
+            ? { opensAt: parsed.opensAt ? new Date(parsed.opensAt) : null }
+            : {}),
+          ...(parsed.closesAt !== undefined
+            ? { closesAt: parsed.closesAt ? new Date(parsed.closesAt) : null }
+            : {}),
+          ...(parsed.points !== undefined ? { points: parsed.points } : {}),
+          ...(parsed.requiresPhoto !== undefined ? { requiresPhoto: parsed.requiresPhoto } : {}),
+          ...(parsed.requiresVideo !== undefined ? { requiresVideo: parsed.requiresVideo } : {}),
+          ...(parsed.requiresText !== undefined ? { requiresText: parsed.requiresText } : {}),
+          ...(parsed.requiresApproval !== undefined
+            ? { requiresApproval: parsed.requiresApproval }
+            : {}),
+          ...(parsed.isFeatured !== undefined ? { isFeatured: parsed.isFeatured } : {}),
+          ...(parsed.configJson !== undefined
+            ? { configJson: parsed.configJson ?? Prisma.JsonNull }
+            : {}),
+          ...(parsed.sortOrder !== undefined ? { sortOrder: parsed.sortOrder } : {}),
+          ...(parsed.laboratoryId !== undefined ? { laboratoryId: parsed.laboratoryId || null } : {}),
+        },
+        include: {
+          laboratory: true,
+          targetClassGroups: { include: { classGroup: true } },
+        },
+      });
     });
 
     if (previous.status !== ActivityStatus.PUBLISHED && updated.status === ActivityStatus.PUBLISHED) {

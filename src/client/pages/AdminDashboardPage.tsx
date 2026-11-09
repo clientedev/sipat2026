@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Activity,
+  Award,
   BarChart3,
   BookOpen,
   CheckSquare,
@@ -20,6 +21,7 @@ import { AdminEvidencesTab } from '../components/admin/AdminEvidencesTab';
 import { AdminMissionsQuizzesTab } from '../components/admin/AdminMissionsQuizzesTab';
 import { AdminParticipantsQrTab } from '../components/admin/AdminParticipantsQrTab';
 import { AdminReportsSettingsTab } from '../components/admin/AdminReportsSettingsTab';
+import { AdminCertificatesTab } from '../components/admin/AdminCertificatesTab';
 import { InstitutionalBrand } from '../components/InstitutionalBrand';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../lib/api';
@@ -32,7 +34,7 @@ export const AdminDashboardPage: React.FC = () => {
   const isEvaluatorOnly = user?.role === 'EVALUATOR';
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'evidences' | 'activities' | 'participants' | 'reports'
+    'overview' | 'evidences' | 'activities' | 'participants' | 'certificates' | 'reports'
   >(isEvaluatorOnly ? 'evidences' : 'overview');
 
   const [dash, setDash] = useState<any | null>(null);
@@ -91,6 +93,12 @@ export const AdminDashboardPage: React.FC = () => {
       allowed: !isEvaluatorOnly,
     },
     {
+      id: 'certificates',
+      label: 'Certificados & Homologação (20h)',
+      icon: <Award size={16} />,
+      allowed: !isEvaluatorOnly,
+    },
+    {
       id: 'reports',
       label: 'Relatórios, Marca & LGPD',
       icon: <FileBarChart size={16} />,
@@ -102,9 +110,9 @@ export const AdminDashboardPage: React.FC = () => {
     <div className="min-h-screen bg-[#F4F6F9] flex flex-col">
       {/* Cabeçalho Institucional Administrativo */}
       <header className="bg-[#1E293B] text-white border-b-4 border-[#E30613] shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link to="/">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <Link to="/" className="shrink-0 min-w-0">
               <InstitutionalBrand
                 officialLogoUrl={publicConfig?.officialLogoUrl}
                 schoolName={publicConfig?.schoolName}
@@ -112,18 +120,18 @@ export const AdminDashboardPage: React.FC = () => {
                 compact
               />
             </Link>
-            <span className="hidden md:inline-flex items-center gap-1.5 bg-[#E30613] text-white text-[11px] font-mono-tech font-bold px-2.5 py-1 rounded">
+            <span className="hidden md:inline-flex items-center gap-1.5 bg-[#E30613] text-white text-[11px] font-mono-tech font-bold px-2.5 py-1 rounded shrink-0">
               <Shield size={12} className="text-[#FFB800]" />
               <span>{user?.role}</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             <a
               href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-bold px-3 py-1.5 rounded transition-colors shadow-xs"
+              className="hidden md:inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-bold px-3 py-1.5 rounded transition-colors shadow-xs"
               title="Baixar Manual Oficial em PDF com prints do sistema"
             >
               <BookOpen size={14} />
@@ -132,11 +140,10 @@ export const AdminDashboardPage: React.FC = () => {
             <Link
               to="/ranking"
               target="_blank"
-              className="hidden sm:inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-xs font-semibold px-3 py-1.5 rounded"
+              className="inline-flex items-center gap-1 sm:gap-1.5 bg-white/10 hover:bg-white/20 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded transition-colors"
             >
               <Trophy size={14} className="text-[#FFB800]" />
-              <span>Abrir Modo TV</span>
-              <ExternalLink size={12} />
+              <span className="hidden sm:inline">Modo TV</span>
             </Link>
             <button
               type="button"
@@ -144,17 +151,17 @@ export const AdminDashboardPage: React.FC = () => {
                 await logout();
                 navigate('/');
               }}
-              className="inline-flex items-center gap-1.5 bg-red-600/90 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded cursor-pointer"
+              className="inline-flex items-center gap-1 sm:gap-1.5 bg-red-600/90 hover:bg-red-700 text-white text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded cursor-pointer transition-colors"
             >
               <LogOut size={14} />
-              <span>Sair</span>
+              <span className="hidden sm:inline">Sair</span>
             </button>
           </div>
         </div>
 
         {/* Barra de Módulos Administrativos */}
         <div className="bg-[#162238] border-t border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 flex overflow-x-auto gap-1">
+          <div className="max-w-7xl mx-auto px-2 sm:px-6 flex overflow-x-auto scrollbar-none gap-1 py-0.5">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -400,6 +407,7 @@ export const AdminDashboardPage: React.FC = () => {
         {activeTab === 'evidences' && <AdminEvidencesTab onReviewed={() => void loadOverview()} />}
         {activeTab === 'activities' && !isEvaluatorOnly && <AdminMissionsQuizzesTab />}
         {activeTab === 'participants' && !isEvaluatorOnly && <AdminParticipantsQrTab />}
+        {activeTab === 'certificates' && !isEvaluatorOnly && <AdminCertificatesTab />}
         {activeTab === 'reports' && !isEvaluatorOnly && <AdminReportsSettingsTab />}
       </main>
     </div>

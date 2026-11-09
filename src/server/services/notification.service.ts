@@ -18,6 +18,11 @@ export function isWebPushEnabled(): boolean {
   return webPushConfigured;
 }
 
+function sanitizeTextForDb(text: string): string {
+  // Remove caracteres fora do BMP (ex: emojis 4-bytes) para prevenir erros de codificação em bancos Windows WIN1252
+  return text.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
+}
+
 export async function createNotification(params: {
   userId: string;
   type: NotificationType;
@@ -25,12 +30,15 @@ export async function createNotification(params: {
   message: string;
   linkUrl?: string;
 }) {
+  const safeTitle = sanitizeTextForDb(params.title);
+  const safeMessage = sanitizeTextForDb(params.message);
+
   const notification = await prisma.notification.create({
     data: {
       userId: params.userId,
       type: params.type,
-      title: params.title,
-      message: params.message,
+      title: safeTitle,
+      message: safeMessage,
       linkUrl: params.linkUrl || '/app',
     },
   });

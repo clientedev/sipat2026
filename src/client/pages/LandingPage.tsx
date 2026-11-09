@@ -25,6 +25,7 @@ import {
   Layers,
   LogIn,
   MapPin,
+  Menu,
   MessageCircle,
   MessageSquare,
   Phone,
@@ -42,6 +43,7 @@ import {
   UserCheck,
   Users,
   Video,
+  X,
 } from 'lucide-react';
 import { SIPAT_EVENT_DAYS } from '@shared/constants';
 import { BadgeIcon } from '../components/BadgeIcon';
@@ -122,6 +124,7 @@ export const LandingPage: React.FC = () => {
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
   const [postComments, setPostComments] = useState<Record<string, FeedComment[]>>({});
   const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const schoolName = publicConfig?.schoolName || 'Escola SENAI "Morvan Figueiredo"';
   const theme =
@@ -331,67 +334,74 @@ export const LandingPage: React.FC = () => {
       )}
 
       {/* 1. Barra Superior Institucional SENAI-SP (Padrão Oficial Mooca) */}
-      <div className="bg-[#1E293B] text-slate-200 border-b-2 border-[#E30613]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 font-bold text-white uppercase tracking-wider text-[11px]">
+      <div className="bg-[#1E293B] text-slate-200 border-b-2 border-[#E30613] text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 sm:py-2 flex items-center justify-between gap-2">
+          {/* Lado Esquerdo */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <span className="inline-flex items-center gap-1.5 font-bold text-white uppercase tracking-wider text-[10px] sm:text-[11px] shrink-0">
               <span className="w-2 h-2 rounded-full bg-[#E30613] animate-pulse" />
-              SENAI-SP • UNIDADE MOOCA
-            </span>
-            <span className="hidden md:inline text-slate-500">|</span>
-            <span className="hidden md:flex items-center gap-1 text-slate-300">
-              <MapPin size={13} className="text-[#E30613]" />
-              Rua Oratório, 215 - Mooca, São Paulo - SP
+              <span className="sm:hidden">SENAI Mooca • SIPAT 2026</span>
+              <span className="hidden sm:inline">SENAI-SP • ESCOLA MORVAN FIGUEIREDO</span>
             </span>
             <span className="hidden lg:inline text-slate-500">|</span>
-            <span className="hidden lg:flex items-center gap-1 text-slate-300">
-              <Phone size={13} className="text-[#E30613]" />
+            <span className="hidden lg:flex items-center gap-1 text-slate-300 truncate">
+              <MapPin size={12} className="text-[#E30613] shrink-0" />
+              <span>Rua Oratório, 215 - Mooca, SP</span>
+            </span>
+            <span className="hidden xl:inline text-slate-500">|</span>
+            <span className="hidden xl:flex items-center gap-1 text-slate-300">
+              <Phone size={12} className="text-[#E30613] shrink-0" />
               (11) 2076-3200
             </span>
           </div>
 
-          <div className="flex items-center gap-4 font-semibold">
+          {/* Lado Direito */}
+          <div className="flex items-center gap-2 sm:gap-4 font-semibold text-[11px] sm:text-xs shrink-0">
             <a
               href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors"
-              title="Baixar Manual Oficial em PDF com prints do sistema"
+              className="text-slate-300 hover:text-white flex items-center gap-1 transition-colors"
+              title="Baixar Manual Oficial em PDF"
             >
-              <BookOpen size={14} className="text-[#E30613]" />
-              <span>Manual em PDF</span>
+              <BookOpen size={13} className="text-[#E30613]" />
+              <span className="hidden xs:inline">Manual PDF</span>
             </a>
-            <span className="text-slate-600">|</span>
+            <span className="hidden sm:inline text-slate-600">|</span>
             <button
               type="button"
               onClick={handleOpenCertificate}
-              className="text-[#F59E0B] hover:text-amber-400 flex items-center gap-1.5 cursor-pointer transition-colors"
+              className="hidden sm:flex text-[#F59E0B] hover:text-amber-400 items-center gap-1 cursor-pointer transition-colors"
             >
-              <Award size={14} />
-              <span>Emitir Certificado (20h)</span>
+              <Award size={13} />
+              <span>Certificado 20h</span>
             </button>
             <span className="text-slate-600">|</span>
             <Link
               to="/ranking"
-              className="text-slate-200 hover:text-white flex items-center gap-1.5 transition-colors"
+              className="text-slate-300 hover:text-white flex items-center gap-1 transition-colors"
             >
-              <Trophy size={14} className="text-[#F59E0B]" />
-              <span>Ranking ao Vivo (TV)</span>
+              <Trophy size={13} className="text-[#F59E0B]" />
+              <span>Modo TV</span>
             </Link>
           </div>
         </div>
       </div>
 
       {/* 2. Cabeçalho Principal (Header Branco com Marca Original SENAI) */}
-      <header className="bg-white border-b border-slate-200/90 sticky top-0 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
-          <InstitutionalBrand
-            officialLogoUrl={publicConfig?.officialLogoUrl}
-            schoolName={schoolName}
-            variant="dark"
-          />
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-40 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
+          {/* Marca Institucional */}
+          <Link to="/" className="shrink-0 min-w-0" onClick={() => setMobileMenuOpen(false)}>
+            <InstitutionalBrand
+              officialLogoUrl={publicConfig?.officialLogoUrl}
+              schoolName={schoolName}
+              variant="dark"
+            />
+          </Link>
 
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-bold text-slate-700">
+          {/* Navegação Desktop (lg+) */}
+          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-bold text-slate-700">
             <button
               type="button"
               onClick={() => setFeedFilter('ALL')}
@@ -399,8 +409,8 @@ export const LandingPage: React.FC = () => {
                 feedFilter === 'ALL' ? 'text-[#E30613]' : ''
               }`}
             >
-              <Flame size={16} className="text-[#E30613]" />
-              <span>Feed Social dos Desafios</span>
+              <Flame size={16} className={feedFilter === 'ALL' ? 'text-[#E30613]' : 'text-slate-400'} />
+              <span>Mural dos Desafios</span>
             </button>
             <button
               type="button"
@@ -409,63 +419,184 @@ export const LandingPage: React.FC = () => {
                 feedFilter === 'PROGRAM' ? 'text-[#E30613]' : ''
               }`}
             >
-              <Calendar size={16} />
+              <Calendar size={16} className={feedFilter === 'PROGRAM' ? 'text-[#E30613]' : 'text-slate-400'} />
               <span>Programação 16–19 Nov</span>
             </button>
             <Link to="/ranking" className="hover:text-[#E30613] transition-colors flex items-center gap-1.5">
               <Trophy size={16} className="text-[#F59E0B]" />
-              <span>Ranking das Turmas</span>
+              <span>Ranking ao Vivo</span>
             </Link>
             <button
               type="button"
               onClick={handleOpenCertificate}
-              className="hover:text-[#E30613] transition-colors cursor-pointer flex items-center gap-1.5 text-amber-700"
+              className="hover:text-[#E30613] transition-colors cursor-pointer flex items-center gap-1.5 text-amber-800"
             >
               <Award size={16} className="text-[#D97706]" />
-              <span>Emitir Certificado</span>
+              <span>Certificado 20h</span>
             </button>
           </nav>
 
-          <div className="flex items-center gap-3">
+          {/* Ações Direitas (Desktop & Mobile) */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {user ? (
               <Link
                 to={user.role === 'PARTICIPANT' ? '/app' : '/admin'}
-                className="inline-flex items-center gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-sm px-4 sm:px-5 py-2.5 rounded-md shadow-xs transition-colors"
+                className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-md shadow-xs transition-colors"
               >
                 <span>Meu Painel</span>
-                <ArrowRight size={16} />
+                <ArrowRight size={14} className="sm:size-4" />
               </Link>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1.5 border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm px-3.5 sm:px-4 py-2.5 rounded-md transition-colors"
+                  className="hidden sm:inline-flex items-center gap-1.5 border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-semibold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-md transition-colors"
                 >
-                  <LogIn size={16} className="text-slate-600" />
+                  <LogIn size={14} className="text-slate-600 sm:size-4" />
                   <span>Entrar</span>
                 </Link>
                 <Link
                   to={registerHref}
-                  className="inline-flex items-center gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-sm px-4 sm:px-5 py-2.5 rounded-md shadow-xs transition-colors"
+                  className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-md shadow-xs transition-colors"
                 >
-                  <QrCode size={16} />
+                  <QrCode size={14} className="sm:size-4" />
                   <span>Inscrever-se</span>
                 </Link>
               </>
             )}
+
+            {/* Botão Hamburger (Mobile / Tablet - lg:hidden) */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="lg:hidden p-2 rounded-md border border-slate-200 text-slate-700 hover:text-[#E30613] hover:bg-slate-50 transition-colors cursor-pointer"
+              aria-label="Abrir menu de navegação"
+              aria-expanded={mobileMenuOpen}
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         </div>
+
+        {/* Menu Mobile Drawer Dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-white border-t border-slate-200 shadow-xl px-4 py-5 space-y-4">
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setFeedFilter('ALL');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-bold transition-colors cursor-pointer text-left ${
+                  feedFilter === 'ALL'
+                    ? 'bg-red-50 text-[#E30613]'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Flame size={18} className="text-[#E30613]" />
+                <span>Mural Social dos Desafios</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setFeedFilter('PROGRAM');
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-bold transition-colors cursor-pointer text-left ${
+                  feedFilter === 'PROGRAM'
+                    ? 'bg-red-50 text-[#E30613]'
+                    : 'text-slate-700 hover:bg-slate-50'
+                }`}
+              >
+                <Calendar size={18} className="text-[#E30613]" />
+                <span>Programação Oficial (16 a 19 Nov)</span>
+              </button>
+
+              <Link
+                to="/ranking"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <Trophy size={18} className="text-[#F59E0B]" />
+                <span>Ranking das Turmas & Modo TV</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleOpenCertificate();
+                }}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-bold text-amber-900 bg-amber-50/70 hover:bg-amber-100/70 border border-amber-200/60 transition-colors cursor-pointer text-left"
+              >
+                <Award size={18} className="text-amber-600" />
+                <span>Emitir Certificado Oficial (20h)</span>
+              </button>
+
+              <a
+                href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <BookOpen size={18} className="text-[#E30613]" />
+                <span>Manual em PDF com Prints do Sistema</span>
+              </a>
+            </div>
+
+            {/* Separador e Ações do Usuário */}
+            <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
+              {!user && (
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full inline-flex items-center justify-center gap-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm py-2.5 px-4 rounded-lg transition-colors"
+                >
+                  <LogIn size={16} />
+                  <span>Acessar Minha Conta (Login)</span>
+                </Link>
+              )}
+              <Link
+                to={user ? (user.role === 'PARTICIPANT' ? '/app' : '/admin') : registerHref}
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-sm py-2.5 px-4 rounded-lg shadow-xs transition-colors"
+              >
+                {user ? (
+                  <>
+                    <span>Ir para Meu Painel</span>
+                    <ArrowRight size={16} />
+                  </>
+                ) : (
+                  <>
+                    <QrCode size={16} />
+                    <span>Fazer Inscrição pelo QR Code</span>
+                  </>
+                )}
+              </Link>
+            </div>
+
+            {/* Rodapé do Menu Mobile com Informações Oficiais */}
+            <div className="pt-2 text-[11px] text-slate-500 space-y-0.5 border-t border-slate-100">
+              <div className="font-bold text-slate-700">Escola SENAI &quot;Morvan Figueiredo&quot;</div>
+              <div>Rua Oratório, 215 • Mooca, São Paulo - SP</div>
+              <div className="text-slate-400 font-mono-tech">(11) 2076-3200</div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* 3. Barra de Destaques em Formato STORIES (Rede Social da Segurança) */}
-      <section className="bg-white border-b border-slate-200 py-3 overflow-x-auto shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-4 sm:gap-6">
-          <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 border-r border-slate-200 pr-4">
+      <section className="bg-white border-b border-slate-200 py-2.5 sm:py-3 shadow-2xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-3 sm:gap-6">
+          <div className="hidden sm:flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider shrink-0 border-r border-slate-200 pr-4">
             <Sparkles size={16} className="text-[#E30613]" />
-            <span className="hidden sm:inline">Destaques SIPAT</span>
+            <span>Destaques SIPAT</span>
           </div>
 
-          <div className="flex items-center gap-4 sm:gap-5 overflow-x-auto py-1">
+          <div className="flex items-center gap-3 sm:gap-5 overflow-x-auto scrollbar-none py-1 w-full">
             {STORIES.map((st) => (
               <button
                 key={st.id}
@@ -485,14 +616,14 @@ export const LandingPage: React.FC = () => {
                     setFeedFilter('PROGRAM');
                   }
                 }}
-                className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer"
+                className="flex flex-col items-center gap-1 shrink-0 group cursor-pointer"
               >
                 <div
-                  className={`w-14 h-14 rounded-full p-0.5 border-2 border-[#E30613] shadow-xs group-hover:scale-105 transition-transform flex items-center justify-center ${st.bg}`}
+                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full p-0.5 border-2 border-[#E30613] shadow-xs group-hover:scale-105 transition-transform flex items-center justify-center ${st.bg}`}
                 >
                   {st.icon}
                 </div>
-                <span className="text-[11px] font-bold text-slate-800 text-center max-w-[80px] truncate">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 text-center max-w-[72px] sm:max-w-[85px] truncate">
                   {st.label}
                 </span>
               </button>
@@ -502,61 +633,61 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* 4. Layout Principal da Rede Social (Timeline Social + Sidebar Informativa) */}
-      <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-12 gap-8">
+      <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 grid lg:grid-cols-12 gap-6 lg:gap-8">
         {/* Coluna Esquerda: Feed Social das Atitudes Seguras (8 colunas) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Caixa de Criação / Desafio Social (Composer) */}
-          <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
-            <div className="flex items-center gap-3.5 pb-4 border-b border-slate-100">
-              <div className="w-11 h-11 rounded-full bg-[#E30613] text-white flex items-center justify-center font-bold text-base shrink-0 shadow-2xs">
+          <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
+            <div className="flex items-center gap-3 pb-3 sm:pb-4 border-b border-slate-100">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#E30613] text-white flex items-center justify-center font-bold text-sm sm:text-base shrink-0 shadow-2xs">
                 {user ? user.fullName[0]?.toUpperCase() : 'S'}
               </div>
-              <div className="flex-1">
-                <p className="font-bold text-sm text-[#1E293B]">
+              <div className="flex-1 min-w-0">
+                <p className="font-bold text-sm text-[#1E293B] truncate">
                   {user ? `Olá, ${user.fullName.split(' ')[0]}!` : 'Participe da Rede Social da SIPAT 2026!'}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 line-clamp-1">
                   Qual atitude preventiva você praticou hoje na Escola SENAI Mooca?
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleOpenCertificate}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold text-xs px-3.5 py-2 rounded-md transition-colors cursor-pointer"
+                className="hidden md:inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold text-xs px-3.5 py-2 rounded-md transition-colors cursor-pointer shrink-0"
               >
                 <Award size={15} className="text-[#D97706]" />
                 <span>Emitir Certificado (20h)</span>
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <Link
                   to={user ? '/app' : registerHref}
-                  className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-[#E30613] text-xs font-semibold px-3 py-2 rounded-md border border-slate-200 transition-colors"
+                  className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-[#E30613] text-xs font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border border-slate-200 transition-colors"
                 >
-                  <Camera size={15} className="text-[#E30613]" />
+                  <Camera size={14} className="text-[#E30613]" />
                   <span>Caça aos Riscos</span>
                 </Link>
                 <Link
                   to={user ? '/app' : registerHref}
-                  className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-[#E30613] text-xs font-semibold px-3 py-2 rounded-md border border-slate-200 transition-colors"
+                  className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-[#E30613] text-xs font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border border-slate-200 transition-colors"
                 >
-                  <Video size={15} className="text-[#E30613]" />
+                  <Video size={14} className="text-[#E30613]" />
                   <span>Vídeo em 60s</span>
                 </Link>
                 <Link
                   to={user ? '/app' : registerHref}
-                  className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-[#E30613] text-xs font-semibold px-3 py-2 rounded-md border border-slate-200 transition-colors"
+                  className="inline-flex items-center gap-1.5 bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-[#E30613] text-xs font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border border-slate-200 transition-colors"
                 >
-                  <HelpCircle size={15} className="text-amber-600" />
-                  <span>Quizzes do Dia</span>
+                  <HelpCircle size={14} className="text-amber-600" />
+                  <span>Quizzes</span>
                 </Link>
               </div>
 
               <Link
                 to={user ? '/app' : registerHref}
-                className="inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-bold px-4 py-2 rounded-md shadow-2xs transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white text-xs font-bold px-4 py-2 rounded-md shadow-2xs transition-colors shrink-0"
               >
                 <span>{user ? 'Enviar Desafio' : 'Fazer Inscrição'}</span>
                 <ArrowRight size={14} />
@@ -565,12 +696,12 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Abas de Filtragem do Feed */}
-          <div className="flex items-center justify-between gap-2 overflow-x-auto pb-1">
-            <div className="inline-flex p-1 bg-white border border-slate-200 rounded-lg shadow-2xs text-xs font-bold gap-1">
+          <div className="flex items-center justify-between gap-2 overflow-x-auto scrollbar-none pb-1">
+            <div className="inline-flex p-1 bg-white border border-slate-200 rounded-lg shadow-2xs text-xs font-bold gap-1 shrink-0">
               <button
                 type="button"
                 onClick={() => setFeedFilter('ALL')}
-                className={`px-3.5 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   feedFilter === 'ALL'
                     ? 'bg-[#E30613] text-white shadow-xs'
                     : 'text-slate-600 hover:text-[#1E293B]'
@@ -582,7 +713,7 @@ export const LandingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setFeedFilter('RISK_HUNT')}
-                className={`px-3.5 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   feedFilter === 'RISK_HUNT'
                     ? 'bg-[#E30613] text-white shadow-xs'
                     : 'text-slate-600 hover:text-[#1E293B]'
@@ -594,7 +725,7 @@ export const LandingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setFeedFilter('VIDEO')}
-                className={`px-3.5 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   feedFilter === 'VIDEO'
                     ? 'bg-[#E30613] text-white shadow-xs'
                     : 'text-slate-600 hover:text-[#1E293B]'
@@ -606,18 +737,18 @@ export const LandingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setFeedFilter('PROGRAM')}
-                className={`px-3.5 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 ${
                   feedFilter === 'PROGRAM'
                     ? 'bg-[#E30613] text-white shadow-xs'
                     : 'text-slate-600 hover:text-[#1E293B]'
                 }`}
               >
                 <Calendar size={14} />
-                <span>Cronograma 4 Dias</span>
+                <span>Cronograma</span>
               </button>
             </div>
 
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide hidden sm:inline">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wide hidden md:inline shrink-0">
               Tempo Real • SIPAT 2026
             </span>
           </div>

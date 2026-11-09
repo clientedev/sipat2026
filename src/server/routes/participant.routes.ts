@@ -47,6 +47,7 @@ function sanitizeMissionConfigForParticipant(configJson: unknown) {
 participantRouter.get('/dashboard', async (req, res, next) => {
   try {
     const userId = req.authUser!.id;
+    const userClassGroupId = req.authUser?.classGroupId;
 
     const [
       user,
@@ -64,6 +65,9 @@ participantRouter.get('/dashboard', async (req, res, next) => {
         where: { id: userId },
         include: {
           classGroup: true,
+          certificate: {
+            include: { releasedBy: { select: { fullName: true } } },
+          },
           submissions: {
             include: {
               mission: { select: { id: true, title: true, points: true, eventDay: true, category: true } },
@@ -93,7 +97,21 @@ participantRouter.get('/dashboard', async (req, res, next) => {
         where: { role: Role.PARTICIPANT, isActive: true, anonymizedAt: null },
       }),
       prisma.mission.findMany({
-        where: { status: { in: [ActivityStatus.PUBLISHED, ActivityStatus.SCHEDULED, ActivityStatus.CLOSED] } },
+        where: {
+          status: { in: [ActivityStatus.PUBLISHED, ActivityStatus.SCHEDULED, ActivityStatus.CLOSED] },
+          ...(userClassGroupId
+            ? {
+                OR: [
+                  { targetClassGroups: { none: {} } },
+                  { targetClassGroups: { some: { classGroupId: userClassGroupId } } },
+                ],
+              }
+            : {}),
+        },
+        include: {
+          laboratory: true,
+          targetClassGroups: { include: { classGroup: { select: { code: true, name: true } } } },
+        },
         orderBy: [{ eventDay: 'asc' }, { sortOrder: 'asc' }],
       }),
       prisma.quiz.findMany({
@@ -182,6 +200,19 @@ participantRouter.get('/dashboard', async (req, res, next) => {
           requiresText: m.requiresText,
           requiresApproval: m.requiresApproval,
           isFeatured: m.isFeatured,
+          laboratory: m.laboratory
+            ? {
+                id: m.laboratory.id,
+                code: m.laboratory.code,
+                name: m.laboratory.name,
+                blockLocation: m.laboratory.blockLocation,
+                courseArea: m.laboratory.courseArea,
+                nrsApplicable: m.laboratory.nrsApplicable,
+                requiredEpis: m.laboratory.requiredEpis,
+              }
+            : null,
+          targetClassesCount: m.targetClassGroups.length,
+          isClassSpecific: m.targetClassGroups.length > 0,
           config: m.status === ActivityStatus.SCHEDULED ? null : sanitizeMissionConfigForParticipant(m.configJson),
           mySubmission: sub
             ? {
@@ -752,16 +783,19 @@ participantRouter.post('/notifications/read-all', async (req, res, next) => {
 
 /**
  * Emissão de Certificado Oficial da SIPAT 2026 – Escola SENAI "Morvan Figueiredo"
- * Com validação digital, carga horária de 20 horas e insígnias conquistadas
+ * Liberação controlada exclusivamente pelo painel de coordenação/administração
  */
 participantRouter.get('/certificate', async (req, res, next) => {
   try {
     const userId = req.authUser!.id;
-    const [user, config, totalParticipants, higherRankedCount] = await Promise.all([
+    const [user, config, totalParticipants, totalMissionsCount, totalQuizzesCount, higherRankedCount] = await Promise.all([
       prisma.user.findUniqueOrThrow({
         where: { id: userId },
         include: {
           classGroup: true,
+          certificate: {
+            include: { releasedBy: { select: { fullName: true } } },
+          },
           badges: {
             include: { badge: true },
             orderBy: { awardedAt: 'asc' },
@@ -778,6 +812,8 @@ participantRouter.get('/certificate', async (req, res, next) => {
       }),
       prisma.systemConfig.findUnique({ where: { id: 'default' } }),
       prisma.user.count({ where: { role: Role.PARTICIPANT, isActive: true } }),
+      prisma.mission.count({ where: { status: { in: [ActivityStatus.PUBLISHED, ActivityStatus.CLOSED] } } }),
+      prisma.quiz.count({ where: { status: { in: [ActivityStatus.PUBLISHED, ActivityStatus.CLOSED] } } }),
       prisma.user.count({
         where: {
           role: Role.PARTICIPANT,
@@ -795,21 +831,54 @@ participantRouter.get('/certificate', async (req, res, next) => {
       }),
     ]);
 
-    const rankPosition = higherRankedCount + 1;
-    const levelInfo = calculateLevelInfo(user.totalPoints);
-    const hash = Buffer.from(`${user.id}:${user.createdAt.getTime()}`)
-      .toString('hex')
-      .slice(0, 8)
-      .toUpperCase();
-    const verificationCode = `SENAI-SIPAT2026-MF-${hash}`;
-
     const approvedMissionsCount = user.submissions.length;
     const completedQuizzesCount = user.quizAttempts.length;
+    const totalActivitiesTarget = Math.max(1, totalMissionsCount + totalQuizzesCount);
+    const userTotalActivities = approvedMissionsCount + completedQuizzesCount;
+    const progressPercent = Math.min(100, Math.round((userTotalActivities / totalActivitiesTarget) * 100));
+    const isEligible = progressPercent >= 30 || approvedMissionsCount >= 1 || user.totalPoints >= 30;
+
+    // Se ainda não foi liberado pelo administrador no painel
+    if (!user.certificate || user.certificate.status !== 'ISSUED') {
+      res.json({
+        released: false,
+        message: 'Seu Certificado Oficial de 20 horas da SIPAT 2026 está em processo de homologação pela coordenação pedagógica da Escola SENAI "Morvan Figueiredo".',
+        candidate: {
+          studentName: user.fullName,
+          registrationCode: user.registrationCode || 'ALUNO-SENAI',
+          classGroup: user.classGroup
+            ? `[${user.classGroup.code}] ${user.classGroup.name}`
+            : 'Turma Técnica SENAI',
+          courseArea: user.classGroup?.courseArea || 'Formação Profissional Técnica',
+          totalPoints: user.totalPoints,
+          rankPosition: higherRankedCount + 1,
+          totalParticipants,
+          approvedMissionsCount,
+          totalMissionsCount,
+          completedQuizzesCount,
+          totalQuizzesCount,
+          badgesCount: user.badges.length,
+          progressPercent,
+          isEligible,
+          statusText: isEligible
+            ? 'Apto para homologação — aguardando liberação da coordenação no painel administrativo'
+            : 'Em andamento — conclua as missões e quizzes da SIPAT para habilitar a emissão',
+        },
+      });
+      return;
+    }
+
+    // Certificado liberado oficialmente pelo administrador
+    const rankPosition = higherRankedCount + 1;
+    const levelInfo = calculateLevelInfo(user.certificate.totalPointsSnapshot ?? user.totalPoints);
+    const cert = user.certificate;
 
     res.json({
+      released: true,
       certificate: {
-        verificationCode,
-        hash: verificationCode,
+        id: cert.id,
+        verificationCode: cert.verificationCode,
+        hash: cert.verificationCode,
         studentName: user.fullName,
         registrationCode: user.registrationCode || 'ALUNO-SENAI',
         classGroup: user.classGroup
@@ -824,15 +893,15 @@ participantRouter.get('/certificate', async (req, res, next) => {
           config?.eventTheme || 'Segurança começa com você: prevenir é uma atitude de todos!',
         eventSlogan: config?.eventSlogan || 'Sua atitude faz a diferença!',
         eventDates: '16 a 19 de novembro de 2026',
-        workloadHours: 20,
-        totalPoints: user.totalPoints,
+        workloadHours: cert.workloadHours || 20,
+        totalPoints: cert.totalPointsSnapshot ?? user.totalPoints,
         rankPosition,
         totalParticipants,
         level: levelInfo.level,
         levelTitle: levelInfo.title,
-        approvedMissionsCount,
-        completedQuizzesCount,
-        totalActivities: approvedMissionsCount + completedQuizzesCount,
+        approvedMissionsCount: cert.missionsSnapshot ?? approvedMissionsCount,
+        completedQuizzesCount: cert.quizzesSnapshot ?? completedQuizzesCount,
+        totalActivities: (cert.missionsSnapshot ?? approvedMissionsCount) + (cert.quizzesSnapshot ?? completedQuizzesCount),
         badges: user.badges.map((b) => ({
           slug: b.badge.slug,
           name: b.badge.name,
@@ -844,7 +913,7 @@ participantRouter.get('/certificate', async (req, res, next) => {
         signatures: [
           {
             title: 'Coordenação Geral da SIPAT 2026 / CIPA',
-            name: 'Prof. Coordenador de Segurança do Trabalho',
+            name: cert.releasedBy?.fullName || 'Prof. Coordenador de Segurança do Trabalho',
             role: 'Presidente da CIPA - Gestão 2026',
           },
           {
@@ -853,12 +922,13 @@ participantRouter.get('/certificate', async (req, res, next) => {
             role: 'Diretor de Unidade de Formação Profissional',
           },
         ],
-        issuedAt: new Date().toLocaleDateString('pt-BR', {
+        releasedAt: cert.releasedAt.toISOString(),
+        issuedAt: cert.releasedAt.toLocaleDateString('pt-BR', {
           day: '2-digit',
           month: 'long',
           year: 'numeric',
         }),
-        verificationUrl: `https://www.sp.senai.br/unidade/mooca/sipat/validar?code=${verificationCode}`,
+        verificationUrl: `https://www.sp.senai.br/unidade/mooca/sipat/validar?code=${cert.verificationCode}`,
       },
     });
   } catch (err) {

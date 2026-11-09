@@ -63,3 +63,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Utilitário para ocultar barras de rolagem nativas mantendo o scroll touch fluído */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

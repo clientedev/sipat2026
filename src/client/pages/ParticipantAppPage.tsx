@@ -10,6 +10,8 @@ import {
   ClipboardCheck,
   Clock,
   Download,
+  FlaskConical,
+  GraduationCap,
   History,
   LogOut,
   PlayCircle,
@@ -18,6 +20,7 @@ import {
   Smartphone,
   Trash2,
   Trophy,
+  X,
 } from 'lucide-react';
 import { SIPAT_EVENT_DAYS, SIPAT_LEVELS } from '@shared/constants';
 import { BadgeIcon } from '../components/BadgeIcon';
@@ -131,14 +134,19 @@ export const ParticipantAppPage: React.FC = () => {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [showCertificate, setShowCertificate] = useState(false);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
+  const [pendingCertInfo, setPendingCertInfo] = useState<any | null>(null);
 
   const handleOpenCertificate = async () => {
     try {
-      const res = await apiFetch<{ certificate: CertificateData }>('/api/participant/certificate');
-      setCertificateData(res.certificate);
-      setShowCertificate(true);
+      const res = await apiFetch<any>('/api/participant/certificate');
+      if (res.released && res.certificate) {
+        setCertificateData(res.certificate);
+        setShowCertificate(true);
+      } else {
+        setPendingCertInfo(res.candidate || { message: res.message });
+      }
     } catch {
-      alert('Não foi possível gerar o certificado neste momento.');
+      alert('Não foi possível verificar o certificado neste momento.');
     }
   };
 
@@ -309,8 +317,8 @@ export const ParticipantAppPage: React.FC = () => {
     <div className="min-h-screen bg-[#F4F6F9] flex flex-col">
       {/* Barra Superior Institucional */}
       <header className="bg-[#1E293B] text-white border-b-4 border-[#E30613] sticky top-0 z-30 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-          <Link to="/">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-3">
+          <Link to="/" className="shrink-0 min-w-0">
             <InstitutionalBrand
               officialLogoUrl={publicConfig?.officialLogoUrl}
               schoolName={publicConfig?.schoolName}
@@ -319,7 +327,7 @@ export const ParticipantAppPage: React.FC = () => {
             />
           </Link>
 
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <a
               href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
               target="_blank"
@@ -333,10 +341,11 @@ export const ParticipantAppPage: React.FC = () => {
             <button
               type="button"
               onClick={handleOpenCertificate}
-              className="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded cursor-pointer transition-colors shadow-2xs"
+              className="inline-flex items-center gap-1 sm:gap-1.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-[11px] sm:text-xs px-2.5 sm:px-3 py-1.5 rounded cursor-pointer transition-colors shadow-2xs"
             >
-              <Award size={14} />
-              <span>Certificado 20h</span>
+              <Award size={13} className="shrink-0 sm:size-3.5" />
+              <span className="hidden xs:inline">Certificado</span>
+              <span>20h</span>
             </button>
             {deferredPwaPrompt && (
               <button
@@ -351,10 +360,11 @@ export const ParticipantAppPage: React.FC = () => {
 
             <Link
               to="/ranking"
-              className="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded text-xs font-semibold"
+              className="inline-flex items-center gap-1 bg-white/10 hover:bg-white/20 px-2 sm:px-3 py-1.5 rounded text-xs font-semibold"
+              title="Ranking Geral da SIPAT"
             >
               <Trophy size={14} className="text-[#FFB800]" />
-              <span className="hidden sm:inline">Ranking Geral</span>
+              <span className="hidden md:inline">Ranking</span>
             </Link>
 
             {/* Botão de Notificações */}
@@ -362,7 +372,7 @@ export const ParticipantAppPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowNotifPanel((v) => !v)}
-                className="relative bg-white/10 hover:bg-white/20 p-2 rounded cursor-pointer"
+                className="relative bg-white/10 hover:bg-white/20 p-1.5 sm:p-2 rounded cursor-pointer"
                 aria-label="Notificações"
               >
                 <Bell size={18} />
@@ -646,6 +656,24 @@ export const ParticipantAppPage: React.FC = () => {
                         <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
                           {m.summary}
                         </p>
+
+                        {/* Informações do Laboratório / Oficina Didática */}
+                        {m.laboratory && (
+                          <div className="bg-blue-50/70 border border-blue-200/80 rounded p-2 text-xs text-blue-950 mt-2 flex items-start gap-1.5">
+                            <FlaskConical size={14} className="text-[#0047B6] shrink-0 mt-0.5" />
+                            <div className="min-w-0">
+                              <div className="font-bold text-[11px] text-[#0047B6] flex items-center gap-1">
+                                <span>{m.laboratory.name}</span>
+                                <span className="font-mono-tech text-[10px] text-blue-700">({m.laboratory.blockLocation})</span>
+                              </div>
+                              {m.laboratory.requiredEpis && (
+                                <div className="text-[10px] text-slate-600 mt-0.5">
+                                  <strong>EPIs no Local:</strong> {m.laboratory.requiredEpis}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -969,6 +997,101 @@ export const ParticipantAppPage: React.FC = () => {
           data={certificateData}
           onClose={() => setShowCertificate(false)}
         />
+      )}
+
+      {/* Modal Informativo: Certificado em Homologação pela Coordenação */}
+      {pendingCertInfo && (
+        <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-slate-300 rounded-xl max-w-md w-full p-6 shadow-2xl relative text-xs animate-in fade-in zoom-in-95 duration-150">
+            <button
+              type="button"
+              onClick={() => setPendingCertInfo(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 font-bold p-1 rounded-md"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="text-center pb-4 border-b border-slate-100">
+              <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <GraduationCap size={28} />
+              </div>
+              <span className="font-mono-tech text-[10px] text-[#E30613] font-bold uppercase tracking-wider">
+                SIPAT 2026 • CARGA HORÁRIA 20H
+              </span>
+              <h3 className="text-base font-bold text-slate-900 mt-0.5">
+                Certificado Oficial em Homologação
+              </h3>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Escola SENAI "Morvan Figueiredo" • Mooca, São Paulo
+              </p>
+            </div>
+
+            <div className="py-4 space-y-3">
+              <div className="bg-amber-50/70 border border-amber-200/80 rounded-lg p-3 text-amber-900 text-[11px] leading-relaxed">
+                <div className="font-bold flex items-center gap-1.5 mb-1 text-amber-950">
+                  <Clock size={13} className="text-amber-600" />
+                  <span>Aguardando Liberação da Coordenação</span>
+                </div>
+                Conforme as diretrizes da SIPAT 2026, os certificados de 20 horas com validação digital oficial
+                são homologados e disparados individualmente pela comissão organizadora/CIPA através do painel pedagógico.
+              </div>
+
+              {pendingCertInfo.progressPercent !== undefined && (
+                <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700">Seu Progresso Atual:</span>
+                    <span className="font-extrabold text-[#E30613] font-mono-tech">
+                      {pendingCertInfo.progressPercent}%
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      className="bg-[#E30613] h-full rounded-full transition-all"
+                      style={{ width: `${pendingCertInfo.progressPercent}%` }}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                    <div className="bg-white p-2 rounded border border-slate-200">
+                      <div className="text-[10px] text-slate-400 font-mono-tech">MISSÕES</div>
+                      <div className="font-bold text-slate-800 text-xs mt-0.5">
+                        {pendingCertInfo.approvedMissionsCount} / {pendingCertInfo.totalMissionsCount}
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-slate-200">
+                      <div className="text-[10px] text-slate-400 font-mono-tech">QUIZZES</div>
+                      <div className="font-bold text-slate-800 text-xs mt-0.5">
+                        {pendingCertInfo.completedQuizzesCount} / {pendingCertInfo.totalQuizzesCount}
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-slate-200">
+                      <div className="text-[10px] text-slate-400 font-mono-tech">PONTOS</div>
+                      <div className="font-black text-[#E30613] text-xs mt-0.5 font-mono-tech">
+                        {pendingCertInfo.totalPoints}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center text-[11px] text-slate-500 pt-1">
+                {pendingCertInfo.statusText ||
+                  'Assim que a coordenação homologar sua participação, você receberá uma notificação e o download em alta resolução estará disponível aqui.'}
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setPendingCertInfo(null)}
+                className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg transition-colors cursor-pointer text-xs"
+              >
+                Entendido, continuar atividades
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
