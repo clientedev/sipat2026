@@ -450,7 +450,7 @@ const FEATURED_SAFETY_POSTS: SocialFeedItem[] = [
   },
 ];
 
-publicRouter.get('/feed', async (_req, res, next) => {
+publicRouter.get('/feed', async (req, res, next) => {
   try {
     // 1. Busca evidências aprovadas no banco de dados real
     const dbSubmissions = await prisma.missionSubmission.findMany({
@@ -518,15 +518,10 @@ publicRouter.get('/feed', async (_req, res, next) => {
       };
     });
 
-    // Combina publicações reais do banco com as publicações institucionais da unidade Mooca
-    const combined = [...dbPosts, ...FEATURED_SAFETY_POSTS];
-    // Remove duplicidades por ID caso já existam
-    const seen = new Set<string>();
-    const feed = combined.filter((item) => {
-      if (seen.has(item.id)) return false;
-      seen.add(item.id);
-      return true;
-    });
+    // Exibe apenas publicações aprovadas de participantes reais do evento.
+    // O modo de demonstração institucional só é ativado se explicitamente solicitado via ?demo=1
+    const includeDemo = req.query.demo === '1';
+    const feed = dbPosts.length > 0 ? dbPosts : includeDemo ? FEATURED_SAFETY_POSTS : [];
 
     res.json({
       feed,

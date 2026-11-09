@@ -96,3 +96,4 @@ captureExtra().catch((e) => {
   console.error('[ERRO CAPTURA EXTRA]', e);
   process.exit(1);
 });
+

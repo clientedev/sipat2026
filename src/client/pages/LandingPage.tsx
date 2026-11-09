@@ -97,6 +97,22 @@ interface FeedComment {
 export const LandingPage: React.FC = () => {
   const { publicConfig, user } = useAuth();
   const [feedPosts, setFeedPosts] = useState<SocialFeedPost[]>([]);
+  const [rankingData, setRankingData] = useState<{
+    podium: Array<{
+      position: number;
+      userId: string;
+      displayName: string;
+      classCode: string;
+      totalPoints: number;
+    }>;
+    classRanking: Array<{
+      position: number;
+      code: string;
+      name: string;
+      totalPoints: number;
+      participantsCount: number;
+    }>;
+  } | null>(null);
   const [feedFilter, setFeedFilter] = useState<'ALL' | 'RISK_HUNT' | 'VIDEO' | '7_ERRORS' | 'PROGRAM'>('ALL');
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [userReactions, setUserReactions] = useState<Record<string, boolean>>({});
@@ -104,33 +120,7 @@ export const LandingPage: React.FC = () => {
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
-  const [postComments, setPostComments] = useState<Record<string, FeedComment[]>>({
-    'post-caca-riscos-1': [
-      {
-        id: 'c1',
-        authorName: 'Prof. Carlos Eduardo (Segurança)',
-        authorRole: 'Docente / CIPA',
-        text: 'Excelente atitude! A fiação exposta é um dos maiores causadores de incidentes em bancadas industriais.',
-        createdAt: 'há 10 min',
-      },
-      {
-        id: 'c2',
-        authorName: 'Lucas Oliveira',
-        authorRole: 'Aluno • CAI-ELE-1M',
-        text: 'Mandou muito bem, Henrique! Isolamento rápido evitou acidentes na aula prática.',
-        createdAt: 'há 5 min',
-      },
-    ],
-    'post-video-60s-1': [
-      {
-        id: 'c3',
-        authorName: 'Coordenação Pedagógica',
-        authorRole: 'Staff SENAI',
-        text: 'Vídeo impecável! A comunicação clara e calma faz toda a diferença em momentos de emergência.',
-        createdAt: 'há 20 min',
-      },
-    ],
-  });
+  const [postComments, setPostComments] = useState<Record<string, FeedComment[]>>({});
   const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
 
   const schoolName = publicConfig?.schoolName || 'Escola SENAI "Morvan Figueiredo"';
@@ -142,11 +132,17 @@ export const LandingPage: React.FC = () => {
     ? `/inscricao?code=${encodeURIComponent(publicConfig.activeQrCode)}`
     : '/inscricao';
 
-  // Carrega publicações sociais da comunidade
+  // Carrega publicações sociais e ranking público em tempo real
   useEffect(() => {
     apiFetch<{ feed: SocialFeedPost[] }>('/api/public/feed')
       .then((res) => {
         if (res.feed) setFeedPosts(res.feed);
+      })
+      .catch(() => {});
+
+    apiFetch<any>('/api/public/ranking')
+      .then((res) => {
+        if (res) setRankingData(res);
       })
       .catch(() => {});
 
@@ -210,13 +206,13 @@ export const LandingPage: React.FC = () => {
       }
     }
 
-    // Certificado demonstrativo institucional oficial para participantes e visitantes
+    // Modelo Oficial de Certificado para visualização institucional
     const sampleCert: CertificateData = {
-      verificationCode: 'SENAI-SIPAT2026-MF-DEMO20H',
-      studentName: user?.fullName || 'Gabriel Eduardo Silva',
-      registrationCode: user?.registrationCode || 'RA20260451-MF',
-      classGroup: '[TEC-DEV-2T] Técnico em Desenvolvimento de Sistemas',
-      courseArea: 'Tecnologia da Informação e Automação',
+      verificationCode: 'SENAI-SIPAT2026-MODELO-OFICIAL',
+      studentName: user?.fullName || 'Nome do Aluno Participante',
+      registrationCode: user?.registrationCode || 'RA-00000000',
+      classGroup: 'Turma Técnica Oficial • SENAI Morvan Figueiredo',
+      courseArea: 'Cultura de Segurança e Formação Profissional',
       schoolName: 'Escola SENAI "Morvan Figueiredo"',
       unit: 'Escola SENAI "Morvan Figueiredo" — Mooca, São Paulo',
       institution: 'Serviço Nacional de Aprendizagem Industrial - SENAI-SP',
@@ -225,47 +221,18 @@ export const LandingPage: React.FC = () => {
       eventSlogan: 'Sua atitude faz a diferença!',
       eventDates: '16 a 19 de novembro de 2026',
       workloadHours: 20,
-      totalPoints: 305,
-      level: 5,
-      levelTitle: 'Mestre da Prevenção',
-      approvedMissionsCount: 5,
-      completedQuizzesCount: 3,
-      totalActivities: 8,
-      badges: [
-        {
-          slug: 'olho-de-aguia',
-          name: 'Olho de Águia',
-          description: 'Evidência de risco identificada e aprovada.',
-          iconName: 'eye',
-          accentColor: '#E30613',
-        },
-        {
-          slug: 'atitude-nota-10',
-          name: 'Atitude Nota 10',
-          description: 'Medida preventiva prática exemplificada.',
-          iconName: 'award',
-          accentColor: '#F59E0B',
-        },
-        {
-          slug: 'guardiao-da-seguranca',
-          name: 'Guardião da Segurança',
-          description: 'Excelência em EPIs e organização de bancadas.',
-          iconName: 'shield',
-          accentColor: '#10B981',
-        },
-        {
-          slug: 'mestre-da-prevencao',
-          name: 'Mestre da Prevenção',
-          description: 'Pontuação avançada na SIPAT 2026.',
-          iconName: 'award',
-          accentColor: '#3B82F6',
-        },
-      ],
+      totalPoints: 0,
+      level: 1,
+      levelTitle: 'Participante Oficial',
+      approvedMissionsCount: 0,
+      completedQuizzesCount: 0,
+      totalActivities: 0,
+      badges: [],
       signatures: [
         {
           title: 'Coordenação Geral da SIPAT 2026 / CIPA',
-          name: 'Prof. Coordenador de Segurança do Trabalho',
-          role: 'Presidente da CIPA - Gestão 2026',
+          name: 'Comissão Interna de Prevenção de Acidentes',
+          role: 'CIPA - Gestão 2026',
         },
         {
           title: 'Direção Escolar',
@@ -278,7 +245,7 @@ export const LandingPage: React.FC = () => {
         month: 'long',
         year: 'numeric',
       }),
-      verificationUrl: `${window.location.origin}/validar?code=SENAI-SIPAT2026-MF-DEMO20H`,
+      verificationUrl: `${window.location.origin}/validar?code=SENAI-SIPAT2026-MODELO-OFICIAL`,
     };
 
     setCertificateData(sampleCert);
@@ -714,16 +681,48 @@ export const LandingPage: React.FC = () => {
           ) : (
             /* Linha do Tempo do Feed Social dos Alunos */
             <div className="space-y-6">
-              {filteredPosts.map((post) => {
-                const reacted = userReactions[post.id];
-                const comments = postComments[post.id] || [];
-                const isCommentsOpen = expandedComments[post.id];
+              {filteredPosts.length === 0 ? (
+                <div className="bg-white border border-slate-200 rounded-xl p-10 text-center space-y-4 shadow-xs">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-red-50 text-[#E30613] flex items-center justify-center">
+                    <Camera size={30} />
+                  </div>
+                  <div className="max-w-md mx-auto space-y-1.5">
+                    <h4 className="font-extrabold text-base text-[#1E293B]">
+                      Mural Oficial de Atitudes Seguras
+                    </h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      As postagens de desafios, fotos e vídeos de 60 segundos enviados pelos alunos e homologados pela Comissão Avaliadora aparecerão aqui em tempo real.
+                    </p>
+                  </div>
+                  <div className="pt-2 flex flex-wrap justify-center gap-3">
+                    <Link
+                      to={registerHref}
+                      className="inline-flex items-center gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white px-5 py-2.5 rounded-lg text-xs font-bold shadow-xs transition-colors"
+                    >
+                      <Sparkles size={14} />
+                      <span>Cadastre-se e Envie seu Desafio</span>
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setFeedFilter('PROGRAM')}
+                      className="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      <Calendar size={14} />
+                      <span>Ver Cronograma Oficial</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                filteredPosts.map((post) => {
+                  const reacted = userReactions[post.id];
+                  const comments = postComments[post.id] || [];
+                  const isCommentsOpen = expandedComments[post.id];
 
-                return (
-                  <article
-                    key={post.id}
-                    className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs hover:border-slate-300 transition-colors"
-                  >
+                  return (
+                    <article
+                      key={post.id}
+                      className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xs hover:border-slate-300 transition-colors"
+                    >
                     {/* Cabeçalho da Postagem Social */}
                     <div className="p-5 flex items-start justify-between gap-3 border-b border-slate-100">
                       <div className="flex items-center gap-3">
@@ -958,9 +957,10 @@ export const LandingPage: React.FC = () => {
                     )}
                   </article>
                 );
-              })}
-            </div>
-          )}
+              })
+            )}
+          </div>
+        )}
         </div>
 
         {/* Coluna Direita: Widgets Sociais, Certificados & Mini-Ranking (4 colunas) */}
@@ -1043,26 +1043,46 @@ export const LandingPage: React.FC = () => {
               </Link>
             </div>
 
-            <div className="space-y-3">
-              {[
-                { pos: '1º', name: 'Henrique Silva', turma: 'TEC-DEV-2T', pts: 305, medal: 'bg-amber-400 text-slate-900' },
-                { pos: '2º', name: 'Beatriz Santos', turma: 'CAI-AUT-1T', pts: 280, medal: 'bg-slate-300 text-slate-900' },
-                { pos: '3º', name: 'Lucas Oliveira', turma: 'CAI-ELE-1M', pts: 250, medal: 'bg-amber-700 text-white' },
-              ].map((ldr) => (
-                <div key={ldr.pos} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center font-extrabold text-[11px] ${ldr.medal}`}>
-                      {ldr.pos}
-                    </span>
-                    <div>
-                      <div className="font-bold text-slate-900">{ldr.name}</div>
-                      <div className="text-[10px] text-slate-500 font-mono-tech">{ldr.turma}</div>
+            {rankingData?.podium && rankingData.podium.length > 0 ? (
+              <div className="space-y-3">
+                {rankingData.podium.slice(0, 3).map((ldr) => {
+                  const medalBg =
+                    ldr.position === 1
+                      ? 'bg-amber-400 text-slate-900'
+                      : ldr.position === 2
+                      ? 'bg-slate-300 text-slate-900'
+                      : 'bg-amber-700 text-white';
+                  return (
+                    <div
+                      key={ldr.userId || ldr.position}
+                      className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border border-slate-200 text-xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className={`w-6 h-6 rounded-full flex items-center justify-center font-extrabold text-[11px] ${medalBg}`}
+                        >
+                          {ldr.position}º
+                        </span>
+                        <div>
+                          <div className="font-bold text-slate-900">{ldr.displayName}</div>
+                          <div className="text-[10px] text-slate-500 font-mono-tech">{ldr.classCode}</div>
+                        </div>
+                      </div>
+                      <strong className="text-xs font-extrabold text-[#E30613]">
+                        {ldr.totalPoints} PTS
+                      </strong>
                     </div>
-                  </div>
-                  <strong className="text-xs font-extrabold text-[#E30613]">{ldr.pts} PTS</strong>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200 text-center space-y-1.5">
+                <p className="text-xs font-bold text-slate-700">Aguardando primeiras pontuações</p>
+                <p className="text-[11px] text-slate-500">
+                  Cadastre-se pelo QR Code e conclua desafios para liderar o pódio da SIPAT!
+                </p>
+              </div>
+            )}
 
             <Link
               to="/ranking"
@@ -1084,22 +1104,32 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <div className="space-y-3 text-xs">
-              {[
-                { code: 'TEC-DEV-2T', name: 'Téc. em Desenv. de Sistemas', pct: 92, pts: 620 },
-                { code: 'CAI-ELE-1M', name: 'Eletricista de Manutenção', pct: 85, pts: 540 },
-                { code: 'CAI-AUT-1T', name: 'Mecânica Automotiva', pct: 78, pts: 490 },
-                { code: 'TEC-LOG-1M', name: 'Técnico em Logística', pct: 72, pts: 440 },
-              ].map((t) => (
-                <div key={t.code} className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-800">{t.code}</span>
-                    <span className="font-extrabold text-[#E30613]">{t.pts} pts</span>
+              {(rankingData?.classRanking && rankingData.classRanking.length > 0
+                ? rankingData.classRanking.slice(0, 4)
+                : (publicConfig?.classes || []).slice(0, 4)
+              ).map((t: any) => {
+                const maxPoints = rankingData?.classRanking?.[0]?.totalPoints || 1;
+                const pct =
+                  maxPoints > 0 && t.totalPoints
+                    ? Math.min(100, Math.round((t.totalPoints / maxPoints) * 100))
+                    : 0;
+                return (
+                  <div key={t.code || t.id} className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-800 truncate max-w-[200px]">
+                        {t.code} {t.name ? `• ${t.name.split('–')[0].trim()}` : ''}
+                      </span>
+                      <span className="font-extrabold text-[#E30613] shrink-0">{t.totalPoints || 0} pts</span>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#E30613] transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-[#E30613]" style={{ width: `${t.pct}%` }} />
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

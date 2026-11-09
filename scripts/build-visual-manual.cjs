@@ -1373,3 +1373,4 @@ generateVisualPdf().catch((err) => {
   console.error('[ERRO GERANDO PDF]', err);
   process.exit(1);
 });
+

@@ -212,3 +212,4 @@ captureAllVisions().catch((err) => {
   console.error('[ERRO NA CAPTURA]', err);
   process.exit(1);
 });
+

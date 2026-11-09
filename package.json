@@ -17,6 +17,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",
+    "db:clean": "tsx scripts/reset-to-production-clean.ts",
     "seed:fakes": "tsx scripts/seed-fake-results.ts",
     "generate:manual": "node scripts/build-visual-manual.cjs",
     "test:e2e": "tsx scripts/e2e-test.ts",
