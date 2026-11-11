@@ -20,6 +20,7 @@ import { publicRouter } from './routes/public.routes.js';
 import { socialRouter } from './routes/social.routes.js';
 import {
   startActivityScheduler,
+  tickSchedulerOnDemand,
   stopActivityScheduler,
 } from './services/scheduler.service.js';
 
@@ -61,6 +62,10 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
   // Rotas da API REST
+  app.use('/api', (_req, _res, next) => {
+    tickSchedulerOnDemand();
+    next();
+  });
   app.use('/api/health', healthRouter);
   app.use('/api/public', publicRouter);
   app.use('/api/auth', authRouter);
@@ -96,7 +101,9 @@ async function bootstrap() {
   const httpServer = http.createServer(app);
 
   initSocketServer(httpServer);
-  startActivityScheduler(10_000);
+  // SCHEDULER_INTERVAL_MS alto (ex.: 900000 = 15 min) deixa o app dormir quando ninguém usa;
+  // as requisições disparam o agendador sob demanda (tickSchedulerOnDemand).
+  startActivityScheduler(Number(process.env.SCHEDULER_INTERVAL_MS) || 10_000);
 
   const port = env.PORT;
   httpServer.listen(port, '0.0.0.0', () => {

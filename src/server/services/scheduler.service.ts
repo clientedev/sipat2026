@@ -153,6 +153,19 @@ export function startActivityScheduler(intervalMs = 10_000) {
   }, intervalMs);
 }
 
+/**
+ * Roda o agendador quando chega uma requisição (no máximo a cada 15s).
+ * Assim, mesmo com intervalo longo (modo econômico, app dormindo no Railway),
+ * missões agendadas são liberadas assim que alguém abre o sistema.
+ */
+let lastOnDemandTick = 0;
+export function tickSchedulerOnDemand() {
+  const now = Date.now();
+  if (now - lastOnDemandTick < 15_000) return;
+  lastOnDemandTick = now;
+  void runSchedulerTick();
+}
+
 export function stopActivityScheduler() {
   if (schedulerInterval) {
     clearInterval(schedulerInterval);
