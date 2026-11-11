@@ -65,7 +65,8 @@ mediaRouter.get('/avatar/:userId', optionalAuth, async (req, res, next) => {
     const isStaff =
       req.authUser &&
       ([Role.SUPER_ADMIN, Role.ADMIN, Role.EVALUATOR] as Role[]).includes(req.authUser.role);
-    const isAllowedPublic = config.showAvatarsInPublic && targetUser.imageConsent;
+    // Dentro da rede social (usuário logado) colegas veem a foto de quem autorizou uso de imagem
+    const isAllowedPublic = (config.showAvatarsInPublic || Boolean(req.authUser)) && targetUser.imageConsent;
 
     if (!isSelf && !isStaff && !isAllowedPublic) {
       res.status(403).json({ error: 'Imagem protegida pelas regras de privacidade LGPD.' });
@@ -118,10 +119,14 @@ mediaRouter.get('/evidence/:submissionId', optionalAuth, async (req, res, next) 
     const isStaff =
       req.authUser &&
       ([Role.SUPER_ADMIN, Role.ADMIN, Role.EVALUATOR] as Role[]).includes(req.authUser.role);
-    const isPublicHighlightAllowed =
-      submission.isPublicHighlight && submission.status === 'APPROVED' && submission.user.imageConsent;
+    const approvedWithConsent = submission.status === 'APPROVED' && submission.user.imageConsent;
+    // Mural público (landing/TV): somente destaques curados pela equipe
+    const isPublicHighlightAllowed = approvedWithConsent && submission.isPublicHighlight && !submission.hiddenFromFeed;
+    // Mural interno da rede social: qualquer membro logado vê publicações compartilhadas
+    const isSchoolFeedAllowed =
+      Boolean(req.authUser) && approvedWithConsent && submission.shareToFeed && !submission.hiddenFromFeed;
 
-    if (!isOwner && !isStaff && !isPublicHighlightAllowed) {
+    if (!isOwner && !isStaff && !isPublicHighlightAllowed && !isSchoolFeedAllowed) {
       res.status(403).json({
         error: 'Acesso negado. As evidências da SIPAT são privadas por padrão conforme a LGPD.',
       });

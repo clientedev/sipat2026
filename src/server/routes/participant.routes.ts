@@ -17,7 +17,7 @@ import {
   uploadObject,
   verifyFileSignature,
 } from '../lib/storage.js';
-import { emitToStaff } from '../lib/socket.js';
+import { emitToStaff, getIO } from '../lib/socket.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { uploadEvidence } from '../middleware/upload.middleware.js';
 import { awardPointsSecurely, evaluateAndGrantBadges } from '../services/gamification.service.js';
@@ -292,9 +292,21 @@ participantRouter.post(
       const userId = req.authUser!.id;
       const now = new Date();
 
-      const mission = await prisma.mission.findUnique({ where: { id: missionId } });
+      const mission = await prisma.mission.findUnique({
+        where: { id: missionId },
+        include: { targetClassGroups: { select: { classGroupId: true } } },
+      });
       if (!mission) {
         res.status(404).json({ error: 'Missão não encontrada.' });
+        return;
+      }
+
+      // Missões direcionadas a turmas específicas só aceitam alunos dessas turmas
+      if (
+        mission.targetClassGroups.length > 0 &&
+        !mission.targetClassGroups.some((t) => t.classGroupId === req.authUser!.classGroupId)
+      ) {
+        res.status(403).json({ error: 'Esta missão é exclusiva de outras turmas.' });
         return;
       }
 
@@ -503,6 +515,8 @@ participantRouter.post(
           ? String(req.body.teamMembersText).trim().slice(0, 300)
           : null,
         status: finalStatus,
+        // Aluno escolhe se a participação aprovada vira publicação no mural da escola
+        shareToFeed: req.body.shareToFeed === undefined ? true : String(req.body.shareToFeed) !== 'false',
         textResponse: textResponse || null,
         structuredData: (structuredData as Prisma.InputJsonValue) ?? Prisma.JsonNull,
         mediaKey,
@@ -539,6 +553,7 @@ participantRouter.post(
           reason: `Conclusão da atividade "${mission.title}"`,
         });
         await evaluateAndGrantBadges(userId);
+        getIO()?.to('participants').emit('social:feed-changed', { postId: savedSubmission.id });
       } else if (finalStatus === SubmissionStatus.PENDING) {
         emitToStaff('submission:new', {
           submissionId: savedSubmission.id,

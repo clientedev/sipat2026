@@ -112,9 +112,5 @@ export function emitToStaff(event: string, data: unknown) {
   io.to('staff').emit(event, data);
 }
 
-export function broadcastFeedReaction(postId: string, count: number) {
-  if (!io) return;
-  io.to('public-live').emit('feed:reaction', { postId, count });
-}
 
 

@@ -148,14 +148,14 @@ export const RegisterPage: React.FC = () => {
       formData.append('email', email.trim());
       formData.append('password', password);
       if (classGroupId) formData.append('classGroupId', classGroupId);
-      if (qrCodeParam) formData.append('qrTokenCode', qrCodeParam);
+      if (qrCodeParam) formData.append('qrCode', qrCodeParam);
       formData.append('isMinor', isMinor ? 'true' : 'false');
       if (guardianName.trim()) formData.append('guardianName', guardianName.trim());
-      formData.append('lgpdConsent', 'true');
+      formData.append('lgpdAccepted', 'true');
       formData.append('imageConsent', imageConsent ? 'true' : 'false');
       if (avatarFile) formData.append('avatar', avatarFile);
 
-      const res = await apiFetch<{ token: string; user: AuthUserProfile }>('/api/public/register', {
+      const res = await apiFetch<{ token: string; user: AuthUserProfile }>('/api/auth/register', {
         method: 'POST',
         body: formData,
       });

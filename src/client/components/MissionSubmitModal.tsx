@@ -38,6 +38,15 @@ export interface ParticipantMissionItem {
   requiresVideo: boolean;
   requiresText: boolean;
   requiresApproval: boolean;
+  laboratory?: {
+    id: string;
+    code: string;
+    name: string;
+    blockLocation: string;
+    courseArea: string;
+    nrsApplicable: string | null;
+    requiredEpis: string | null;
+  } | null;
   config: {
     question?: string;
     options?: Array<{ id: string; text: string }>;
@@ -98,6 +107,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
     existing?.structuredData?.selectedOptionId || ''
   );
 
+  const [shareToFeed, setShareToFeed] = useState(true);
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
 
@@ -161,6 +171,7 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
       if (mediaFile) {
         formData.append('media', mediaFile);
       }
+      formData.append('shareToFeed', String(shareToFeed));
 
       await apiFetch(`/api/participant/missions/${mission.id}/submit`, {
         method: 'POST',
@@ -579,6 +590,20 @@ export const MissionSubmitModal: React.FC<MissionSubmitModalProps> = ({
                   )}
                 </div>
               )}
+
+              <label className="flex items-start gap-2.5 bg-blue-50/60 border border-blue-200 rounded p-3 text-xs text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={shareToFeed}
+                  onChange={(e) => setShareToFeed(e.target.checked)}
+                  className="mt-0.5 accent-[#E30613]"
+                />
+                <span>
+                  <strong className="text-[#1E293B]">Publicar no Mural da escola quando for aprovada.</strong>{' '}
+                  Seus colegas poderão curtir e comentar. Fotos e vídeos só aparecem se você autorizou o uso
+                  de imagem no seu perfil. Você pode retirar do mural a qualquer momento.
+                </span>
+              </label>
 
               <div className="flex items-center justify-end gap-2 pt-2">
                 <button

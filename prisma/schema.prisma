@@ -78,6 +78,8 @@ enum NotificationType {
   BADGE_UNLOCKED
   DEADLINE_SOON
   SYSTEM
+  SOCIAL_LIKE
+  SOCIAL_COMMENT
 }
 
 model SystemConfig {
@@ -149,6 +151,7 @@ model User {
   classGroup           ClassGroup?          @relation(fields: [classGroupId], references: [id], onDelete: SetNull)
   avatarKey            String?
   avatarMime           String?
+  bio                  String?
   isMinor              Boolean              @default(false)
   guardianName         String?
   lgpdConsentAt        DateTime?
@@ -178,6 +181,8 @@ model User {
   actorAuditLogs       AuditLog[]           @relation("AuditActor")
   targetAuditLogs      AuditLog[]           @relation("AuditTarget")
   certificate          Certificate?         @relation("UserCertificate")
+  postLikes            PostLike[]
+  postComments         PostComment[]
   issuedCertificates   Certificate[]        @relation("CertificateIssuer")
 
   @@index([role, isActive, totalPoints(sort: Desc)])
@@ -246,6 +251,8 @@ model MissionSubmission {
   secondaryMediaKey  String?
   secondaryMediaMime String?
   isPublicHighlight  Boolean          @default(false)
+  shareToFeed        Boolean          @default(true)
+  hiddenFromFeed     Boolean          @default(false)
   awardedPoints      Int              @default(0)
   feedback           String?
   evaluatedById      String?
@@ -254,7 +261,11 @@ model MissionSubmission {
   submittedAt        DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 
+  likes    PostLike[]
+  comments PostComment[]
+
   @@unique([missionId, userId])
+  @@index([status, shareToFeed, hiddenFromFeed, evaluatedAt(sort: Desc)], map: "MissionSubmission_feed_idx")
   @@index([status, submittedAt(sort: Desc)])
   @@index([userId])
   @@index([missionId])
@@ -490,3 +501,34 @@ model Certificate {
   @@index([status])
 }
 
+
+// ============================================================================
+// REDE SOCIAL DOS ALUNOS: curtidas e comentários nas publicações do mural
+// (uma publicação = uma participação aprovada em atividade cadastrada)
+// ============================================================================
+model PostLike {
+  id           String            @id @default(uuid())
+  submissionId String
+  submission   MissionSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime          @default(now())
+
+  @@unique([submissionId, userId])
+  @@index([submissionId])
+  @@index([userId])
+}
+
+model PostComment {
+  id           String            @id @default(uuid())
+  submissionId String
+  submission   MissionSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  body         String
+  isHidden     Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+
+  @@index([submissionId, createdAt])
+  @@index([userId])
+}

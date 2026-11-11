@@ -12,6 +12,7 @@ import {
   FileBarChart,
   LayoutDashboard,
   LogOut,
+  MessagesSquare,
   QrCode,
   Shield,
   Trophy,
@@ -23,6 +24,8 @@ import { AdminParticipantsQrTab } from '../components/admin/AdminParticipantsQrT
 import { AdminReportsSettingsTab } from '../components/admin/AdminReportsSettingsTab';
 import { AdminCertificatesTab } from '../components/admin/AdminCertificatesTab';
 import { InstitutionalBrand } from '../components/InstitutionalBrand';
+import { FeedView } from '../components/social/FeedView';
+import { ProfileView } from '../components/social/ProfileView';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../lib/api';
 import { getRealtimeSocket } from '../lib/socket';
@@ -34,11 +37,12 @@ export const AdminDashboardPage: React.FC = () => {
   const isEvaluatorOnly = user?.role === 'EVALUATOR';
 
   const [activeTab, setActiveTab] = useState<
-    'overview' | 'evidences' | 'activities' | 'participants' | 'certificates' | 'reports'
+    'overview' | 'evidences' | 'feed' | 'activities' | 'participants' | 'certificates' | 'reports'
   >(isEvaluatorOnly ? 'evidences' : 'overview');
 
   const [dash, setDash] = useState<any | null>(null);
   const [copiedMsg, setCopiedMsg] = useState<string | null>(null);
+  const [feedProfileId, setFeedProfileId] = useState<string | null>(null);
 
   const loadOverview = useCallback(async () => {
     try {
@@ -78,6 +82,12 @@ export const AdminDashboardPage: React.FC = () => {
       id: 'evidences',
       label: `Central de Evidências (${dash?.indicators?.pendingSubmissions ?? 0})`,
       icon: <CheckSquare size={16} />,
+      allowed: true,
+    },
+    {
+      id: 'feed',
+      label: 'Mural da Rede (moderação)',
+      icon: <MessagesSquare size={16} />,
       allowed: true,
     },
     {
@@ -122,7 +132,13 @@ export const AdminDashboardPage: React.FC = () => {
             </Link>
             <span className="hidden md:inline-flex items-center gap-1.5 bg-[#E30613] text-white text-[11px] font-mono-tech font-bold px-2.5 py-1 rounded shrink-0">
               <Shield size={12} className="text-[#FFB800]" />
-              <span>{user?.role}</span>
+              <span>
+                {user?.role === 'SUPER_ADMIN'
+                  ? 'Superadmin'
+                  : user?.role === 'ADMIN'
+                  ? 'Coordenação'
+                  : 'Professor / Avaliador'}
+              </span>
             </span>
           </div>
 
@@ -405,6 +421,24 @@ export const AdminDashboardPage: React.FC = () => {
         )}
 
         {activeTab === 'evidences' && <AdminEvidencesTab onReviewed={() => void loadOverview()} />}
+        {activeTab === 'feed' && (
+          <div className="max-w-2xl mx-auto">
+            {feedProfileId ? (
+              <ProfileView userId={feedProfileId} onOpenProfile={setFeedProfileId} onBack={() => setFeedProfileId(null)} />
+            ) : (
+              <FeedView
+                hasClass={false}
+                onOpenProfile={setFeedProfileId}
+                header={
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-950">
+                    Este é o mural que os alunos veem. Use o menu <strong>⋯</strong> de cada publicação para ocultar
+                    conteúdo inadequado (fica registrado na auditoria). Você também pode remover comentários.
+                  </div>
+                }
+              />
+            )}
+          </div>
+        )}
         {activeTab === 'activities' && !isEvaluatorOnly && <AdminMissionsQuizzesTab />}
         {activeTab === 'participants' && !isEvaluatorOnly && <AdminParticipantsQrTab />}
         {activeTab === 'certificates' && !isEvaluatorOnly && <AdminCertificatesTab />}

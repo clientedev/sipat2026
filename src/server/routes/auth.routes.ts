@@ -48,6 +48,7 @@ function serializeAuthenticatedUser(user: any) {
     levelProgressPercent: levelInfo.progressPercent,
     nextLevelPoints: levelInfo.nextLevelPoints,
     avatarUrl: user.avatarKey ? `/api/media/avatar/${user.id}?v=${user.updatedAt?.getTime?.() || 1}` : null,
+    bio: user.bio ?? null,
     isMinor: user.isMinor,
     imageConsent: user.imageConsent,
     lgpdConsentAt: user.lgpdConsentAt,
@@ -87,7 +88,8 @@ const registerSchema = z.object({
 
 authRouter.post('/register', authLimiter, uploadAvatar.single('avatar'), async (req, res, next) => {
   try {
-    const parsed = registerSchema.parse(req.body);
+    // A página de inscrição envia o código do QR como "qrTokenCode"; aceita ambos os nomes
+    const parsed = registerSchema.parse({ ...req.body, qrCode: req.body.qrCode || req.body.qrTokenCode || undefined });
     const config = await getSystemConfigSafe();
     const now = new Date();
 
@@ -385,6 +387,11 @@ authRouter.patch('/profile', requireAuth, uploadAvatar.single('avatar'), async (
 
     const dataToUpdate: Record<string, any> = {};
 
+    if (req.body.bio !== undefined) {
+      const bio = String(req.body.bio || '').trim().slice(0, 160);
+      dataToUpdate.bio = bio || null;
+    }
+
     if (req.body.imageConsent !== undefined) {
       const consent = req.body.imageConsent === 'true' || req.body.imageConsent === true;
       dataToUpdate.imageConsent = consent;
@@ -497,12 +504,15 @@ authRouter.delete('/lgpd-account', requireAuth, async (req, res, next) => {
 
     const anonSuffix = crypto.randomBytes(4).toString('hex');
     await prisma.$transaction([
+      prisma.postComment.deleteMany({ where: { userId: user.id } }),
+      prisma.postLike.deleteMany({ where: { userId: user.id } }),
       prisma.missionSubmission.updateMany({
         where: { userId: user.id },
         data: {
           mediaKey: null,
           secondaryMediaKey: null,
           isPublicHighlight: false,
+          shareToFeed: false,
         },
       }),
       prisma.user.update({
@@ -513,6 +523,7 @@ authRouter.delete('/lgpd-account', requireAuth, async (req, res, next) => {
           registrationCode: null,
           avatarKey: null,
           guardianName: null,
+          bio: null,
           imageConsent: false,
           isActive: false,
           anonymizedAt: new Date(),

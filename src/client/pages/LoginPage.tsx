@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, ArrowLeft, CheckCircle2, KeyRound, LogIn, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowLeft, CheckCircle2, ClipboardCheck, GraduationCap, KeyRound, LogIn, ShieldCheck } from 'lucide-react';
 import { InstitutionalBrand } from '../components/InstitutionalBrand';
 import { AuthUserProfile, useAuth } from '../context/AuthContext';
 import { apiFetch } from '../lib/api';
@@ -155,10 +155,30 @@ export const LoginPage: React.FC = () => {
             {mode === 'login' ? (
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
-                  <h1 className="text-xl font-extrabold text-[#1E293B]">Entrar na SIPAT 2026</h1>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Alunos, colaboradores, avaliadores e coordenação.
-                  </p>
+                  <h1 className="text-xl font-extrabold text-[#1E293B]">Entrar na rede SIPAT 2026</h1>
+                  <p className="text-xs text-slate-500 mt-1">Um único login para todos. O sistema leva cada perfil para o lugar certo:</p>
+                  <ul className="mt-3 grid gap-1.5 text-[11px]">
+                    <li className="flex gap-2 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5">
+                      <GraduationCap size={14} className="text-[#E30613] shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Aluno:</strong> entre com seu <strong>RA/matrícula</strong> ou e-mail. Você vai para o mural,
+                        atividades, ranking e seu perfil.
+                      </span>
+                    </li>
+                    <li className="flex gap-2 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5">
+                      <ClipboardCheck size={14} className="text-[#0047B6] shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Professor / Avaliador:</strong> e-mail institucional criado pela coordenação. Avalia as
+                        participações e modera o mural.
+                      </span>
+                    </li>
+                    <li className="flex gap-2 bg-slate-50 border border-slate-200 rounded px-2.5 py-1.5">
+                      <ShieldCheck size={14} className="text-[#1E293B] shrink-0 mt-0.5" />
+                      <span>
+                        <strong>Coordenação:</strong> cadastra atividades, pontos, turmas, alunos e certificados.
+                      </span>
+                    </li>
+                  </ul>
                 </div>
 
                 <div>
@@ -200,7 +220,7 @@ export const LoginPage: React.FC = () => {
 
                 <div className="pt-3 border-t border-slate-200 text-center">
                   <p className="text-xs text-slate-600">
-                    Ainda não tem cadastro?{' '}
+                    Aluno e ainda não tem conta?{' '}
                     <Link
                       to={
                         publicConfig?.activeQrCode
@@ -209,7 +229,7 @@ export const LoginPage: React.FC = () => {
                       }
                       className="text-[#E30613] font-bold hover:underline"
                     >
-                      Cadastrar-se com QR Code
+                      Criar minha conta
                     </Link>
                   </p>
                 </div>
@@ -219,7 +239,8 @@ export const LoginPage: React.FC = () => {
                 <div>
                   <h1 className="text-xl font-extrabold text-[#1E293B]">Recuperar Senha</h1>
                   <p className="text-xs text-slate-500 mt-1">
-                    Informe seu e-mail e matrícula institucional cadastrados.
+                    Para alunos: informe o e-mail e o RA/matrícula usados no cadastro e escolha uma nova senha.
+                    Professores e coordenação devem pedir a redefinição ao superadministrador.
                   </p>
                 </div>
 

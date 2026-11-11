@@ -17,6 +17,7 @@ import { healthRouter } from './routes/health.routes.js';
 import { mediaRouter } from './routes/media.routes.js';
 import { participantRouter } from './routes/participant.routes.js';
 import { publicRouter } from './routes/public.routes.js';
+import { socialRouter } from './routes/social.routes.js';
 import {
   startActivityScheduler,
   stopActivityScheduler,
@@ -64,6 +65,7 @@ export function createApp() {
   app.use('/api/public', publicRouter);
   app.use('/api/auth', authRouter);
   app.use('/api/participant', participantRouter);
+  app.use('/api/social', socialRouter);
   app.use('/api/admin', adminRouter);
   app.use('/api/media', mediaRouter);
 

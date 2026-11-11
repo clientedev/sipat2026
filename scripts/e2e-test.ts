@@ -412,7 +412,18 @@ async function runTests() {
       );
     }
 
-    // 6.1 Emissão de Certificado Oficial de 20h e Validação Pública por Hash
+    // 6.1 Certificado de 20h: antes da homologação fica pendente; a coordenação libera; depois valida por hash
+    const certPending = await jsonReq('/api/participant/certificate', {}, studentToken);
+    assert.equal(certPending.status, 200);
+    assert.equal(certPending.data.released, false, 'Certificado só existe após liberação da coordenação');
+
+    const release = await jsonReq(
+      '/api/admin/certificates/release',
+      { method: 'POST', body: JSON.stringify({ userIds: [studentId] }) },
+      adminToken
+    );
+    assert.equal(release.status, 200, `Falha ao liberar certificado: ${JSON.stringify(release.data)}`);
+
     const certRes = await jsonReq('/api/participant/certificate', {}, studentToken);
     assert.equal(certRes.status, 200, 'Falha ao gerar certificado do aluno');
     assert.equal(certRes.data.certificate.studentName, 'Henrique Souza Teste');
@@ -425,20 +436,19 @@ async function runTests() {
     assert.equal(verifyCert.data.valid, true);
     assert.equal(verifyCert.data.workloadHours, 20);
 
-    // 6.2 Feed Social de Atitudes Seguras & Reações Interativas
-    const feedRes = await jsonReq('/api/public/feed');
-    assert.equal(feedRes.status, 200, 'Falha ao buscar feed social público');
-    const posts = feedRes.data.feed || feedRes.data.posts || [];
-    assert.ok(Array.isArray(posts), 'Feed deve retornar lista de posts');
-    assert.ok(posts.length >= 1, 'Feed deve conter publicações');
-    const firstPost = posts[0];
+    // 6.2 Rede social: participação aprovada vira publicação no mural interno, com curtida real (1 por pessoa)
+    const feedRes = await jsonReq('/api/social/feed', {}, studentToken);
+    assert.equal(feedRes.status, 200, 'Falha ao buscar o mural da rede social');
+    const posts = (feedRes.data.items || []).filter((i: any) => i.kind === 'POST');
+    assert.ok(posts.some((p: any) => p.id === rhSubmissionId), 'Participação aprovada deve aparecer no mural');
 
-    const reactRes = await jsonReq(`/api/public/feed/${firstPost.id}/react`, {
-      method: 'POST',
-      body: JSON.stringify({ reaction: 'claps' }),
-    });
-    assert.equal(reactRes.status, 200, 'Falha ao registrar reação no post do feed');
-    assert.equal(reactRes.data.ok, true);
+    const likeRes = await jsonReq(`/api/social/posts/${rhSubmissionId}/like`, { method: 'POST' }, studentToken);
+    assert.equal(likeRes.status, 200, 'Falha ao curtir publicação');
+    assert.equal(likeRes.data.liked, true);
+    assert.equal(likeRes.data.likesCount, 1);
+
+    const anonFeed = await jsonReq('/api/social/feed');
+    assert.equal(anonFeed.status, 401, 'Mural interno deve exigir login');
     console.log('✔ [6.1] Emissão de Certificado 20h, Verificação Pública e Feed Social de Atitudes Seguras OK');
 
     // Verifica Ranking Público e Máscara de Privacidade LGPD ("Henrique S. T.")

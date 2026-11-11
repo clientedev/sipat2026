@@ -77,23 +77,9 @@ interface SocialFeedPost {
   hasVideo?: boolean;
   awardedPoints: number;
   feedback: string | null;
-  evaluatorTitle: string;
-  badgeUnlocked?: string | null;
-  badgeName?: string | null;
-  badgeIcon?: string | null;
-  badgeColor?: string | null;
   reactionsCount: number;
   commentsCount: number;
   submittedAt: string;
-  isOfficialHighlight: boolean;
-}
-
-interface FeedComment {
-  id: string;
-  authorName: string;
-  authorRole: string;
-  text: string;
-  createdAt: string;
 }
 
 export const LandingPage: React.FC = () => {
@@ -117,13 +103,9 @@ export const LandingPage: React.FC = () => {
   } | null>(null);
   const [feedFilter, setFeedFilter] = useState<'ALL' | 'RISK_HUNT' | 'VIDEO' | '7_ERRORS' | 'PROGRAM'>('ALL');
   const [selectedDay, setSelectedDay] = useState<number>(1);
-  const [userReactions, setUserReactions] = useState<Record<string, boolean>>({});
   const [activeStory, setActiveStory] = useState<string | null>(null);
   const [showCertificateModal, setShowCertificateModal] = useState(false);
   const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
-  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
-  const [postComments, setPostComments] = useState<Record<string, FeedComment[]>>({});
-  const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const schoolName = publicConfig?.schoolName || 'Escola SENAI "Morvan Figueiredo"';
@@ -149,60 +131,20 @@ export const LandingPage: React.FC = () => {
       })
       .catch(() => {});
 
-    const socket = getRealtimeSocket();
-    const onReaction = (data: { postId: string; count: number }) => {
-      setFeedPosts((prev) =>
-        prev.map((p) => (p.id === data.postId ? { ...p, reactionsCount: data.count } : p))
-      );
-    };
-
-    socket.on('feed:reaction', onReaction);
-    return () => {
-      socket.off('feed:reaction', onReaction);
-    };
   }, []);
 
-  const handleReact = async (postId: string) => {
-    setUserReactions((prev) => ({ ...prev, [postId]: true }));
-    setFeedPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, reactionsCount: p.reactionsCount + 1 } : p))
-    );
-
-    try {
-      await apiFetch(`/api/public/feed/${postId}/react`, { method: 'POST' });
-    } catch {
-      // ignore
-    }
-  };
-
-  const handleAddComment = (postId: string) => {
-    const text = newCommentText[postId]?.trim();
-    if (!text) return;
-
-    const newC: FeedComment = {
-      id: `c_${Date.now()}`,
-      authorName: user?.fullName || 'Participante SENAI',
-      authorRole: user?.role === 'PARTICIPANT' ? 'Aluno(a)' : 'Comunidade SENAI',
-      text,
-      createdAt: 'agora',
-    };
-
-    setPostComments((prev) => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), newC],
-    }));
-
-    setNewCommentText((prev) => ({ ...prev, [postId]: '' }));
-    setExpandedComments((prev) => ({ ...prev, [postId]: true }));
-  };
 
   // Abre emissão de Certificado Oficial
   const handleOpenCertificate = async () => {
     if (user?.role === 'PARTICIPANT') {
       try {
-        const res = await apiFetch<{ certificate: CertificateData }>('/api/participant/certificate');
-        setCertificateData(res.certificate);
-        setShowCertificateModal(true);
+        const res = await apiFetch<{ released?: boolean; certificate?: CertificateData }>('/api/participant/certificate');
+        if (res.released && res.certificate) {
+          setCertificateData(res.certificate);
+          setShowCertificateModal(true);
+        } else {
+          window.location.href = '/app?tab=profile';
+        }
         return;
       } catch {
         // fallback
@@ -845,9 +787,6 @@ export const LandingPage: React.FC = () => {
                 </div>
               ) : (
                 filteredPosts.map((post) => {
-                  const reacted = userReactions[post.id];
-                  const comments = postComments[post.id] || [];
-                  const isCommentsOpen = expandedComments[post.id];
 
                   return (
                     <article
@@ -972,120 +911,33 @@ export const LandingPage: React.FC = () => {
                       <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
                         <div className="space-y-0.5">
                           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                            {post.evaluatorTitle}
+                            Avaliação da equipe SIPAT
                           </span>
                           <p className="text-slate-700 italic">
                             &quot;{post.feedback}&quot;
                           </p>
                         </div>
 
-                        {post.badgeName && (
-                          <div className="flex items-center gap-1.5 bg-white border border-slate-200 px-3 py-1.5 rounded-full shrink-0 shadow-2xs">
-                            <BadgeIcon
-                              iconName={post.badgeIcon || 'award'}
-                              accentColor={post.badgeColor || '#E30613'}
-                              unlocked
-                              size="sm"
-                            />
-                            <span className="font-bold text-[11px] text-[#1E293B]">
-                              {post.badgeName}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
 
-                    {/* Barra de Ações Sociais (Curtidas, Comentários, Compartilhar) */}
+                    {/* Curtir e comentar acontecem dentro da rede (login), 1 curtida por pessoa */}
                     <div className="px-5 py-3 border-t border-slate-100 bg-[#F8FAFC] flex items-center justify-between gap-3 text-xs">
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        {/* Botão de Reação Interativo */}
-                        <button
-                          type="button"
-                          onClick={() => handleReact(post.id)}
-                          className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-md font-bold cursor-pointer transition-all ${
-                            reacted
-                              ? 'bg-red-100 text-[#E30613] scale-105'
-                              : 'bg-white hover:bg-red-50 text-slate-700 border border-slate-200 hover:border-red-200'
-                          }`}
-                        >
-                          <span className="text-base">👏</span>
-                          <span>Atitude Nota 10!</span>
-                          <span className="bg-[#E30613] text-white text-[10px] px-1.5 py-0.2 rounded-full tabular-nums">
-                            {post.reactionsCount}
-                          </span>
-                        </button>
-
-                        {/* Botão de Comentários */}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setExpandedComments((prev) => ({ ...prev, [post.id]: !prev[post.id] }))
-                          }
-                          className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 font-semibold cursor-pointer px-2 py-1.5"
-                        >
-                          <MessageSquare size={15} />
-                          <span>{comments.length} Comentários</span>
-                        </button>
+                      <div className="flex items-center gap-4 text-slate-600 font-semibold">
+                        <span className="inline-flex items-center gap-1.5">
+                          <Heart size={15} className="text-[#E30613]" /> {post.reactionsCount} curtida(s)
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                          <MessageSquare size={15} /> {post.commentsCount} comentário(s)
+                        </span>
                       </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const shareUrl = `${window.location.origin}/#${post.id}`;
-                          navigator.clipboard?.writeText(shareUrl);
-                          alert('Link da publicação copiado para a área de transferência!');
-                        }}
-                        className="inline-flex items-center gap-1.5 text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
-                        title="Compartilhar desafio"
+                      <Link
+                        to={user ? (user.role === 'PARTICIPANT' ? `/app?post=${post.id}` : '/admin') : '/login'}
+                        className="inline-flex items-center gap-1.5 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold px-3 py-1.5 rounded-md"
                       >
-                        <Share2 size={15} />
-                        <span className="hidden sm:inline">Compartilhar</span>
-                      </button>
+                        {user ? 'Curtir e comentar' : 'Entre para curtir'}
+                      </Link>
                     </div>
-
-                    {/* Área Expandida de Comentários */}
-                    {isCommentsOpen && (
-                      <div className="p-5 border-t border-slate-200 bg-white space-y-3.5">
-                        <h5 className="font-bold text-xs uppercase tracking-wider text-slate-600">
-                          Comentários e Apoio dos Colegas ({comments.length})
-                        </h5>
-
-                        <div className="space-y-2.5">
-                          {comments.map((c) => (
-                            <div key={c.id} className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="font-bold text-slate-900">{c.authorName}</span>
-                                <span className="text-[10px] text-slate-400 font-mono-tech">{c.createdAt}</span>
-                              </div>
-                              <p className="text-slate-700">{c.text}</p>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Caixa de Novo Comentário */}
-                        <div className="flex items-center gap-2 pt-2">
-                          <input
-                            type="text"
-                            value={newCommentText[post.id] || ''}
-                            onChange={(e) =>
-                              setNewCommentText((prev) => ({ ...prev, [post.id]: e.target.value }))
-                            }
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleAddComment(post.id);
-                            }}
-                            placeholder="Deixe uma mensagem de incentivo ou observação técnica..."
-                            className="flex-1 border border-slate-300 rounded-md px-3.5 py-2 text-xs focus:outline-none focus:border-[#E30613]"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleAddComment(post.id)}
-                            className="bg-[#E30613] hover:bg-[#C2040F] text-white px-3.5 py-2 rounded-md text-xs font-bold cursor-pointer"
-                          >
-                            <Send size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </article>
                 );
               })

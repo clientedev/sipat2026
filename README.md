@@ -7,6 +7,29 @@ Plataforma web institucional gamificada desenvolvida para a **Semana Interna de 
 
 ---
 
+## Como o sistema funciona (rede social dos alunos)
+
+1. **A coordenação cadastra atividades** (missões e quizzes) com pontuação, dia, turmas-alvo e laboratório.
+2. **O aluno participa** pela aba *Atividades* (foto, vídeo, texto, Caça aos Riscos, 7 Erros, quiz).
+3. **O professor/avaliador aprova** na *Central de Evidências*. Só então os pontos entram, o nível sobe e as medalhas são liberadas.
+4. **A participação aprovada vira uma publicação no Mural** (se o aluno marcou "publicar no mural"). Colegas **curtem (1 por pessoa) e comentam**; o autor é notificado. Curtidas e comentários **não valem pontos** — os pontos vêm só das atividades cadastradas.
+5. **Ranking** da escola, da turma e entre turmas; **perfil** de cada aluno com bio, medalhas, posts e curtidas recebidas.
+6. **Moderação:** a equipe oculta publicações/comentários inadequados (registrado na auditoria); o dono do post pode ocultar comentários nele; o aluno pode tirar o próprio post do mural.
+7. **Privacidade (LGPD):** fotos/vídeos só aparecem no mural se o autor autorizou uso de imagem; a vitrine pública (página inicial/TV) mostra apenas posts marcados como *Destaque* pela equipe.
+
+### Perfis de acesso (um único login em `/login`)
+
+| Perfil | Como entra | Para onde vai | O que faz |
+| :--- | :--- | :--- | :--- |
+| **Aluno** (`PARTICIPANT`) | Cria a conta em `/inscricao` (QR Code ou link) e entra com **RA ou e-mail** | `/app` | Mural, Atividades, Ranking, Perfil, certificado |
+| **Professor / Avaliador** (`EVALUATOR`) | E-mail criado pela coordenação | `/admin` | Avalia participações e modera o mural |
+| **Coordenação** (`ADMIN`) | E-mail criado pelo superadmin | `/admin` | Atividades, turmas, alunos, QR, certificados, relatórios |
+| **Superadmin** (`SUPER_ADMIN`) | Criado no 1º deploy (`INITIAL_ADMIN_*`) | `/admin` | Tudo acima + contas da equipe e senhas |
+
+Alunos recuperam a senha sozinhos (e-mail + RA); a equipe pede a redefinição ao superadmin.
+
+---
+
 ## 1. Arquitetura e Stack Tecnológica
 
 | Camada | Tecnologias |
@@ -27,7 +50,7 @@ Plataforma web institucional gamificada desenvolvida para a **Semana Interna de 
 | `/` | **Página Inicial da Campanha** | Pública | Apresentação institucional da SIPAT 2026, objetivos pedagógicos, programação dos 4 dias (16–19/11), medalhas e QR Code de inscrição. |
 | `/inscricao` (`/inscricao?code=...`) | **Cadastro Mobile via QR Code** | Pública | Formulário otimizado para smartphones com captura direta de foto pela câmera, escolha de turma, consentimento LGPD/menores e login automático. |
 | `/login` | **Autenticação e Recuperação** | Pública | Login para alunos, colaboradores, avaliadores e administradores, além de recuperação segura de acesso. |
-| `/app` | **Painel Gamificado do Participante** | Participante | Crachá técnico digital, pontuação, ranking, nível, missões diárias, envio de fotos/vídeos, Caça aos Riscos, quizzes com feedback educativo, medalhas, notificações em tempo real e controles LGPD. |
+| `/app` | **Rede Social do Aluno** | Participante | Mural (curtidas e comentários), Atividades (missões e quizzes), Ranking (escola/turma/turmas) e Perfil (bio, medalhas, extrato, certificado, LGPD). |
 | `/ranking` | **Ranking Ao Vivo & Modo TV** | Pública | Placar em tempo real (Individual, por Turmas e Destaques do Dia) com **Modo Apresentação Tela Cheia** e alternância automática para TVs e projetores da escola. |
 | `/acompanhamento` | **Painel Público Geral** | Pública | Indicadores em tempo real de inscritos, taxa de participação, evidências enviadas, missões concluídas, pontuação acumulada e evolução diária. |
 | `/admin` | **Painel Administrativo & Avaliador** | Staff (`EVALUATOR`, `ADMIN`, `SUPER_ADMIN`) | Gestão completa de inscrições/QR Code, turmas, participantes (manual + planilha), missões, agendador automático, quizzes, central de aprovação de evidências, auditoria e relatórios Excel/PDF. |

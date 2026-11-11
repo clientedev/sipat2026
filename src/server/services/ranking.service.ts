@@ -10,9 +10,14 @@ export async function getSystemConfigSafe() {
   return config;
 }
 
-export async function buildPublicRankingData(options?: { unmaskedForStaff?: boolean }) {
+export async function buildPublicRankingData(options?: {
+  unmaskedForStaff?: boolean;
+  /** Visão interna da rede social (usuário logado): nome completo e foto de quem autorizou imagem */
+  schoolMembersView?: boolean;
+}) {
   const config = await getSystemConfigSafe();
-  const unmasked = Boolean(options?.unmaskedForStaff);
+  const unmasked = Boolean(options?.unmaskedForStaff || options?.schoolMembersView);
+  const membersView = Boolean(options?.schoolMembersView);
 
   const [participants, classes, recentApprovedSubmissions] = await Promise.all([
     prisma.user.findMany({
@@ -72,7 +77,8 @@ export async function buildPublicRankingData(options?: { unmaskedForStaff?: bool
       : maskParticipantName(p.fullName, config.namePrivacyMode);
 
     const canShowAvatar =
-      Boolean(p.avatarKey) && (unmasked || (config.showAvatarsInPublic && p.imageConsent));
+      Boolean(p.avatarKey) &&
+      (options?.unmaskedForStaff || ((membersView || config.showAvatarsInPublic) && p.imageConsent));
 
     return {
       position: index + 1,

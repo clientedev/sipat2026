@@ -30,6 +30,7 @@ import {
   broadcastActivityClosed,
   broadcastActivityReleased,
   broadcastRankingRefresh,
+  getIO,
 } from '../lib/socket.js';
 import { requireAuth, requireRoles } from '../middleware/auth.middleware.js';
 import { uploadAvatar, uploadSpreadsheet } from '../middleware/upload.middleware.js';
@@ -338,8 +339,11 @@ adminRouter.post('/submissions/:id/review', requireRoles(...STAFF_ROLES), async 
         parsed.status === 'APPROVED'
           ? `Você recebeu ${targetPoints} pontos! ${updated.feedback || ''}`
           : `Orientação do avaliador: ${updated.feedback || 'Verifique sua atividade no painel.'}`,
-      linkUrl: '/app',
+      linkUrl: parsed.status === 'APPROVED' ? `/app?post=${existing.id}` : '/app?tab=activities',
     });
+
+    // Aprovada (ou deixou de estar aprovada): o mural da rede social muda
+    getIO()?.to('participants').emit('social:feed-changed', { postId: existing.id });
 
     await recordAuditLog({
       actorId: req.authUser!.id,
