@@ -54,6 +54,7 @@ import {
   generateRiskHuntPdfReport,
 } from '../services/report.service.js';
 import { runSchedulerTick } from '../services/scheduler.service.js';
+import { computeChallengeProgress } from '../services/certificate.service.js';
 
 export const adminRouter = Router();
 
@@ -1142,19 +1143,22 @@ adminRouter.get('/certificates/candidates', requireRoles(...STAFF_ROLES), async 
       prisma.quiz.count({ where: { status: { in: [ActivityStatus.PUBLISHED, ActivityStatus.CLOSED] } } }),
     ]);
 
+    const progressByUser = await computeChallengeProgress(participants.map((p) => p.id));
+    void totalMissionsCount;
+    void totalQuizzesCount;
+
     const candidates = participants.map((p) => {
-      const approvedMissions = p.submissions.length;
-      const completedQuizzes = p.quizAttempts.length;
+      const prog = progressByUser.get(p.id)!;
+      const approvedMissions = prog.doneMissions;
+      const completedQuizzes = prog.doneQuizzes;
       const avgQuizScore = completedQuizzes > 0
         ? Math.round(p.quizAttempts.reduce((acc, q) => acc + q.scorePercent, 0) / completedQuizzes)
         : 0;
 
-      const totalActivitiesTarget = Math.max(1, totalMissionsCount + totalQuizzesCount);
-      const userTotalActivities = approvedMissions + completedQuizzes;
-      const progressPercent = Math.min(100, Math.round((userTotalActivities / totalActivitiesTarget) * 100));
-
+      const progressPercent = prog.progressPercent;
       const isReleased = Boolean(p.certificate && p.certificate.status === 'ISSUED');
-      const isEligible = progressPercent >= 30 || approvedMissions >= 1 || p.totalPoints >= 30;
+      // Apto = concluiu TODOS os desafios que valem para a turma dele
+      const isEligible = prog.isComplete;
 
       return {
         id: p.id,
@@ -1165,9 +1169,9 @@ adminRouter.get('/certificates/candidates', requireRoles(...STAFF_ROLES), async 
         totalPoints: p.totalPoints,
         level: p.level,
         approvedMissions,
-        totalMissionsCount,
+        totalMissionsCount: prog.requiredMissions,
         completedQuizzes,
-        totalQuizzesCount,
+        totalQuizzesCount: prog.requiredQuizzes,
         avgQuizScore,
         badgesCount: p.badges.length,
         progressPercent,
@@ -1228,8 +1232,15 @@ adminRouter.post('/certificates/release', requireRoles(...ADMIN_ROLES), async (r
 
     const issuerId = req.authUser!.id;
     let releasedCount = 0;
+    const progressByUser = await computeChallengeProgress(participants.map((p) => p.id));
+    const skipped: string[] = [];
 
     for (const p of participants) {
+      // Só libera para quem concluiu todos os desafios
+      if (!progressByUser.get(p.id)?.isComplete) {
+        skipped.push(p.fullName);
+        continue;
+      }
       const hash = crypto.randomBytes(4).toString('hex').toUpperCase();
       const code = `SENAI-SIPAT2026-MF-${hash}`;
 
@@ -1274,11 +1285,18 @@ adminRouter.post('/certificates/release', requireRoles(...ADMIN_ROLES), async (r
       actorRole: req.authUser!.role,
       action: 'CERTIFICATES_RELEASED',
       entityType: 'Certificate',
-      metadata: { targetCount: userIds.length, releasedCount },
+      metadata: { targetCount: userIds.length, releasedCount, skippedIncomplete: skipped.length },
       ipAddress: req.ip,
     });
 
-    res.json({ ok: true, releasedCount });
+    if (releasedCount === 0 && skipped.length > 0) {
+      res.status(400).json({
+        error: `Nenhum certificado liberado: ${skipped.length} aluno(s) ainda não concluíram todos os desafios.`,
+        skipped,
+      });
+      return;
+    }
+    res.json({ ok: true, releasedCount, skippedIncomplete: skipped.length, skipped });
   } catch (err) {
     next(err);
   }

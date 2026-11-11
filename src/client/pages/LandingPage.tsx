@@ -47,7 +47,6 @@ import {
 } from 'lucide-react';
 import { SIPAT_EVENT_DAYS } from '@shared/constants';
 import { BadgeIcon } from '../components/BadgeIcon';
-import { CertificateData, CertificateModal } from '../components/CertificateModal';
 import { InstitutionalBrand } from '../components/InstitutionalBrand';
 import { useAuth } from '../context/AuthContext';
 import { apiFetch } from '../lib/api';
@@ -104,8 +103,6 @@ export const LandingPage: React.FC = () => {
   const [feedFilter, setFeedFilter] = useState<'ALL' | 'RISK_HUNT' | 'VIDEO' | '7_ERRORS' | 'PROGRAM'>('ALL');
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [activeStory, setActiveStory] = useState<string | null>(null);
-  const [showCertificateModal, setShowCertificateModal] = useState(false);
-  const [certificateData, setCertificateData] = useState<CertificateData | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const schoolName = publicConfig?.schoolName || 'Escola SENAI "Morvan Figueiredo"';
@@ -134,68 +131,6 @@ export const LandingPage: React.FC = () => {
   }, []);
 
 
-  // Abre emissão de Certificado Oficial
-  const handleOpenCertificate = async () => {
-    if (user?.role === 'PARTICIPANT') {
-      try {
-        const res = await apiFetch<{ released?: boolean; certificate?: CertificateData }>('/api/participant/certificate');
-        if (res.released && res.certificate) {
-          setCertificateData(res.certificate);
-          setShowCertificateModal(true);
-        } else {
-          window.location.href = '/app?tab=profile';
-        }
-        return;
-      } catch {
-        // fallback
-      }
-    }
-
-    // Modelo Oficial de Certificado para visualização institucional
-    const sampleCert: CertificateData = {
-      verificationCode: 'SENAI-SIPAT2026-MODELO-OFICIAL',
-      studentName: user?.fullName || 'Nome do Aluno Participante',
-      registrationCode: user?.registrationCode || 'RA-00000000',
-      classGroup: 'Turma Técnica Oficial • SENAI Morvan Figueiredo',
-      courseArea: 'Cultura de Segurança e Formação Profissional',
-      schoolName: 'Escola SENAI "Morvan Figueiredo"',
-      unit: 'Escola SENAI "Morvan Figueiredo" — Mooca, São Paulo',
-      institution: 'Serviço Nacional de Aprendizagem Industrial - SENAI-SP',
-      eventTitle: 'SIPAT 2026',
-      eventTheme: 'Segurança começa com você: prevenir é uma atitude de todos!',
-      eventSlogan: 'Sua atitude faz a diferença!',
-      eventDates: '16 a 19 de novembro de 2026',
-      workloadHours: 20,
-      totalPoints: 0,
-      level: 1,
-      levelTitle: 'Participante Oficial',
-      approvedMissionsCount: 0,
-      completedQuizzesCount: 0,
-      totalActivities: 0,
-      badges: [],
-      signatures: [
-        {
-          title: 'Coordenação Geral da SIPAT 2026 / CIPA',
-          name: 'Comissão Interna de Prevenção de Acidentes',
-          role: 'CIPA - Gestão 2026',
-        },
-        {
-          title: 'Direção Escolar',
-          name: 'Direção da Escola SENAI "Morvan Figueiredo"',
-          role: 'Diretor de Unidade de Formação Profissional',
-        },
-      ],
-      issuedAt: new Date().toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }),
-      verificationUrl: `${window.location.origin}/validar?code=SENAI-SIPAT2026-MODELO-OFICIAL`,
-    };
-
-    setCertificateData(sampleCert);
-    setShowCertificateModal(true);
-  };
 
   // Filtragem dos posts da rede social
   const filteredPosts = feedPosts.filter((p) => {
@@ -258,22 +193,10 @@ export const LandingPage: React.FC = () => {
       tag: 'DIA 4 • 19/NOV',
       action: '#gincana',
     },
-    {
-      id: 'cert',
-      label: 'Certificado 20h',
-      icon: <Award size={18} className="text-white" />,
-      bg: 'bg-rose-700',
-      tag: 'EMISSÃO OFICIAL',
-      action: 'cert',
-    },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F1F5F9] text-[#1E293B]">
-      {/* Modal de Certificado Oficial */}
-      {showCertificateModal && certificateData && (
-        <CertificateModal data={certificateData} onClose={() => setShowCertificateModal(false)} />
-      )}
 
       {/* 1. Barra Superior Institucional SENAI-SP (Padrão Oficial Mooca) */}
       <div className="bg-[#1E293B] text-slate-200 border-b-2 border-[#E30613] text-xs">
@@ -309,15 +232,6 @@ export const LandingPage: React.FC = () => {
               <BookOpen size={13} className="text-[#E30613]" />
               <span className="hidden xs:inline">Manual PDF</span>
             </a>
-            <span className="hidden sm:inline text-slate-600">|</span>
-            <button
-              type="button"
-              onClick={handleOpenCertificate}
-              className="hidden sm:flex text-[#F59E0B] hover:text-amber-400 items-center gap-1 cursor-pointer transition-colors"
-            >
-              <Award size={13} />
-              <span>Certificado 20h</span>
-            </button>
             <span className="text-slate-600">|</span>
             <Link
               to="/ranking"
@@ -334,16 +248,17 @@ export const LandingPage: React.FC = () => {
       <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between gap-3">
           {/* Marca Institucional */}
-          <Link to="/" className="shrink-0 min-w-0" onClick={() => setMobileMenuOpen(false)}>
+          <Link to="/" className="min-w-0" onClick={() => setMobileMenuOpen(false)}>
             <InstitutionalBrand
               officialLogoUrl={publicConfig?.officialLogoUrl}
               schoolName={schoolName}
               variant="dark"
+              fullFrom="xl"
             />
           </Link>
 
-          {/* Navegação Desktop (lg+) */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-bold text-slate-700">
+          {/* Navegação Desktop (xl+) — rótulos curtos e sem quebra de linha */}
+          <nav className="hidden xl:flex items-center gap-6 text-sm font-bold text-slate-700 whitespace-nowrap">
             <button
               type="button"
               onClick={() => setFeedFilter('ALL')}
@@ -352,7 +267,7 @@ export const LandingPage: React.FC = () => {
               }`}
             >
               <Flame size={16} className={feedFilter === 'ALL' ? 'text-[#E30613]' : 'text-slate-400'} />
-              <span>Mural dos Desafios</span>
+              <span>Mural</span>
             </button>
             <button
               type="button"
@@ -362,20 +277,12 @@ export const LandingPage: React.FC = () => {
               }`}
             >
               <Calendar size={16} className={feedFilter === 'PROGRAM' ? 'text-[#E30613]' : 'text-slate-400'} />
-              <span>Programação 16–19 Nov</span>
+              <span>Programação</span>
             </button>
             <Link to="/ranking" className="hover:text-[#E30613] transition-colors flex items-center gap-1.5">
               <Trophy size={16} className="text-[#F59E0B]" />
-              <span>Ranking ao Vivo</span>
+              <span>Ranking ao vivo</span>
             </Link>
-            <button
-              type="button"
-              onClick={handleOpenCertificate}
-              className="hover:text-[#E30613] transition-colors cursor-pointer flex items-center gap-1.5 text-amber-800"
-            >
-              <Award size={16} className="text-[#D97706]" />
-              <span>Certificado 20h</span>
-            </button>
           </nav>
 
           {/* Ações Direitas (Desktop & Mobile) */}
@@ -385,7 +292,8 @@ export const LandingPage: React.FC = () => {
                 to={user.role === 'PARTICIPANT' ? '/app' : '/admin'}
                 className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-md shadow-xs transition-colors"
               >
-                <span>Meu Painel</span>
+                <span className="hidden sm:inline">Meu Painel</span>
+                <span className="sm:hidden">Painel</span>
                 <ArrowRight size={14} className="sm:size-4" />
               </Link>
             ) : (
@@ -399,7 +307,7 @@ export const LandingPage: React.FC = () => {
                 </Link>
                 <Link
                   to={registerHref}
-                  className="inline-flex items-center gap-1.5 sm:gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-md shadow-xs transition-colors"
+                  className="hidden sm:inline-flex items-center gap-1.5 sm:gap-2 bg-[#E30613] hover:bg-[#C2040F] text-white font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-md shadow-xs transition-colors"
                 >
                   <QrCode size={14} className="sm:size-4" />
                   <span>Inscrever-se</span>
@@ -411,7 +319,7 @@ export const LandingPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setMobileMenuOpen((v) => !v)}
-              className="lg:hidden p-2 rounded-md border border-slate-200 text-slate-700 hover:text-[#E30613] hover:bg-slate-50 transition-colors cursor-pointer"
+              className="xl:hidden p-2 rounded-md border border-slate-200 text-slate-700 hover:text-[#E30613] hover:bg-slate-50 transition-colors cursor-pointer"
               aria-label="Abrir menu de navegação"
               aria-expanded={mobileMenuOpen}
             >
@@ -422,7 +330,7 @@ export const LandingPage: React.FC = () => {
 
         {/* Menu Mobile Drawer Dropdown */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-slate-200 shadow-xl px-4 py-5 space-y-4">
+          <div className="xl:hidden bg-white border-t border-slate-200 shadow-xl px-4 py-5 space-y-4">
             <div className="space-y-1">
               <button
                 type="button"
@@ -464,18 +372,6 @@ export const LandingPage: React.FC = () => {
                 <Trophy size={18} className="text-[#F59E0B]" />
                 <span>Ranking das Turmas & Modo TV</span>
               </Link>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  handleOpenCertificate();
-                }}
-                className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-bold text-amber-900 bg-amber-50/70 hover:bg-amber-100/70 border border-amber-200/60 transition-colors cursor-pointer text-left"
-              >
-                <Award size={18} className="text-amber-600" />
-                <span>Emitir Certificado Oficial (20h)</span>
-              </button>
 
               <a
                 href="/docs/MANUAL_SIPAT_2026_SENAI_MOOCA.pdf"
@@ -544,9 +440,7 @@ export const LandingPage: React.FC = () => {
                 key={st.id}
                 type="button"
                 onClick={() => {
-                  if (st.action === 'cert') {
-                    handleOpenCertificate();
-                  } else if (st.action === '/ranking') {
+                  if (st.action === '/ranking') {
                     window.location.href = '/ranking';
                   } else if (st.id === 'riscos') {
                     setFeedFilter('RISK_HUNT');
@@ -577,7 +471,7 @@ export const LandingPage: React.FC = () => {
       {/* 4. Layout Principal da Rede Social (Timeline Social + Sidebar Informativa) */}
       <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8 grid lg:grid-cols-12 gap-6 lg:gap-8">
         {/* Coluna Esquerda: Feed Social das Atitudes Seguras (8 colunas) */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-6 min-w-0">
           {/* Caixa de Criação / Desafio Social (Composer) */}
           <div className="bg-white border border-slate-200 rounded-xl p-4 sm:p-5 shadow-xs">
             <div className="flex items-center gap-3 pb-3 sm:pb-4 border-b border-slate-100">
@@ -592,14 +486,6 @@ export const LandingPage: React.FC = () => {
                   Qual atitude preventiva você praticou hoje na Escola SENAI Mooca?
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleOpenCertificate}
-                className="hidden md:inline-flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 font-bold text-xs px-3.5 py-2 rounded-md transition-colors cursor-pointer shrink-0"
-              >
-                <Award size={15} className="text-[#D97706]" />
-                <span>Emitir Certificado (20h)</span>
-              </button>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3">
@@ -947,7 +833,7 @@ export const LandingPage: React.FC = () => {
         </div>
 
         {/* Coluna Direita: Widgets Sociais, Certificados & Mini-Ranking (4 colunas) */}
-        <aside className="lg:col-span-4 space-y-6">
+        <aside className="lg:col-span-4 space-y-6 min-w-0">
           {/* Widget 1: Emissão do Certificado Oficial SIPAT (Destaque Dourado) */}
           <div className="bg-gradient-to-br from-amber-500 via-yellow-500 to-amber-600 rounded-xl p-0.5 shadow-md">
             <div className="bg-[#1E293B] text-white rounded-[10px] p-5 space-y-4">
@@ -963,8 +849,9 @@ export const LandingPage: React.FC = () => {
                   Certificado de Participação SIPAT 2026
                 </h4>
                 <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                  Garanta suas <strong>20 horas complementares</strong> de formação em cultura
-                  preventiva e segurança do trabalho com autenticação digital oficial SENAI-SP.
+                  <strong>20 horas</strong> de formação em cultura preventiva para quem{' '}
+                  <strong>concluir todos os desafios</strong> da SIPAT. A coordenação libera e você emite no seu
+                  perfil, com validação digital.
                 </p>
               </div>
 
@@ -983,14 +870,13 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleOpenCertificate}
-                className="w-full bg-[#E30613] hover:bg-[#C2040F] text-white font-extrabold py-3 px-4 rounded-lg text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+              <Link
+                to={user ? (user.role === 'PARTICIPANT' ? '/app?tab=profile' : '/admin') : '/login'}
+                className="w-full bg-[#E30613] hover:bg-[#C2040F] text-white font-extrabold py-3 px-4 rounded-lg text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-xs transition-colors"
               >
                 <Award size={17} />
-                <span>Emitir / Visualizar Certificado</span>
-              </button>
+                <span>{user?.role === 'PARTICIPANT' ? 'Ver meu progresso' : 'Entrar para acompanhar'}</span>
+              </Link>
             </div>
           </div>
 
@@ -1191,13 +1077,9 @@ export const LandingPage: React.FC = () => {
               </h5>
               <ul className="space-y-2 text-slate-400">
                 <li>
-                  <button
-                    type="button"
-                    onClick={handleOpenCertificate}
-                    className="hover:text-white transition-colors cursor-pointer text-amber-400 font-bold"
-                  >
-                    Emitir Certificado de Participação (20h)
-                  </button>
+                  <Link to="/login" className="hover:text-white transition-colors">
+                    Entrar na rede SIPAT
+                  </Link>
                 </li>
                 <li>
                   <Link to={registerHref} className="hover:text-white transition-colors">

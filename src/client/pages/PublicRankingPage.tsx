@@ -174,21 +174,22 @@ export const PublicRankingPage: React.FC = () => {
       {/* Topo Institucional de Alto Contraste para Telões e Projetores */}
       <header className="bg-[#1E293B] border-b-4 border-[#E30613] shadow-md sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between gap-3">
-          <Link to="/" className="shrink-0 min-w-0">
+          <Link to="/" className="min-w-0">
             <InstitutionalBrand
               officialLogoUrl={data?.officialLogoUrl ? '/api/media/brand' : null}
               schoolName={data?.schoolName || 'Escola SENAI "Morvan Figueiredo"'}
               variant="light"
               compact
+              fullFrom="lg"
             />
           </Link>
 
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 flex-wrap justify-end">
-            <div className="inline-flex items-center gap-1.5 bg-[#0F172A]/80 border border-emerald-500/40 px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[10px] sm:text-xs font-mono-tech">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 whitespace-nowrap">
+            <div className="hidden sm:inline-flex items-center gap-1.5 bg-[#0F172A]/80 border border-emerald-500/40 px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[10px] sm:text-xs font-mono-tech">
               <Radio size={12} className={connected ? 'text-emerald-400 animate-pulse' : 'text-amber-400'} />
               <span className="text-emerald-300 font-semibold">
-                <span className="xs:hidden">AO VIVO</span>
-                <span className="hidden xs:inline">{connected ? 'TEMPO REAL ATIVO' : 'SINCRONIZANDO'}</span>
+                <span className="lg:hidden">AO VIVO</span>
+                <span className="hidden lg:inline">{connected ? 'TEMPO REAL ATIVO' : 'SINCRONIZANDO'}</span>
               </span>
             </div>
 
@@ -212,7 +213,7 @@ export const PublicRankingPage: React.FC = () => {
               className="inline-flex items-center gap-1 sm:gap-1.5 bg-[#0F172A] hover:bg-slate-900 border border-[#FFB800] text-[#FFB800] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded text-[11px] sm:text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors"
             >
               {isFullscreen ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-              <span className="hidden xs:inline">{isFullscreen ? 'Sair TV' : 'Modo TV'}</span>
+              <span className="hidden md:inline">{isFullscreen ? 'Sair TV' : 'Modo TV'}</span>
             </button>
 
             <Link

@@ -21,6 +21,7 @@ import { emitToStaff, getIO } from '../lib/socket.js';
 import { requireAuth } from '../middleware/auth.middleware.js';
 import { uploadEvidence } from '../middleware/upload.middleware.js';
 import { awardPointsSecurely, evaluateAndGrantBadges } from '../services/gamification.service.js';
+import { computeChallengeProgress } from '../services/certificate.service.js';
 
 export const participantRouter = Router();
 
@@ -152,6 +153,7 @@ participantRouter.get('/dashboard', async (req, res, next) => {
 
     const earnedBadgeIds = new Set(userBadges.map((ub) => ub.badgeId));
 
+    const challengeProgress = (await computeChallengeProgress([userId])).get(userId)!;
     res.json({
       profile: {
         id: user.id,
@@ -273,6 +275,10 @@ participantRouter.get('/dashboard', async (req, res, next) => {
       pointHistory,
       notifications,
       unreadNotificationsCount: unreadCount,
+      certificateStatus: {
+        ...challengeProgress,
+        released: Boolean(user.certificate && user.certificate.status === 'ISSUED'),
+      },
     });
   } catch (err) {
     next(err);
@@ -846,12 +852,14 @@ participantRouter.get('/certificate', async (req, res, next) => {
       }),
     ]);
 
-    const approvedMissionsCount = user.submissions.length;
-    const completedQuizzesCount = user.quizAttempts.length;
-    const totalActivitiesTarget = Math.max(1, totalMissionsCount + totalQuizzesCount);
-    const userTotalActivities = approvedMissionsCount + completedQuizzesCount;
-    const progressPercent = Math.min(100, Math.round((userTotalActivities / totalActivitiesTarget) * 100));
-    const isEligible = progressPercent >= 30 || approvedMissionsCount >= 1 || user.totalPoints >= 30;
+    // Regra única: certificado só para quem concluiu TODOS os desafios que valem para ele
+    const progress = (await computeChallengeProgress([userId])).get(userId)!;
+    const approvedMissionsCount = progress.doneMissions;
+    const completedQuizzesCount = progress.doneQuizzes;
+    const progressPercent = progress.progressPercent;
+    const isEligible = progress.isComplete;
+    void totalMissionsCount;
+    void totalQuizzesCount;
 
     // Se ainda não foi liberado pelo administrador no painel
     if (!user.certificate || user.certificate.status !== 'ISSUED') {
@@ -869,15 +877,15 @@ participantRouter.get('/certificate', async (req, res, next) => {
           rankPosition: higherRankedCount + 1,
           totalParticipants,
           approvedMissionsCount,
-          totalMissionsCount,
+          totalMissionsCount: progress.requiredMissions,
           completedQuizzesCount,
-          totalQuizzesCount,
+          totalQuizzesCount: progress.requiredQuizzes,
           badgesCount: user.badges.length,
           progressPercent,
           isEligible,
           statusText: isEligible
-            ? 'Apto para homologação — aguardando liberação da coordenação no painel administrativo'
-            : 'Em andamento — conclua as missões e quizzes da SIPAT para habilitar a emissão',
+            ? 'Você concluiu todos os desafios! Aguardando a coordenação liberar o certificado.'
+            : `Faltam ${progress.totalRequired - progress.totalDone} desafio(s). O certificado é liberado só para quem concluir todos.`,
         },
       });
       return;

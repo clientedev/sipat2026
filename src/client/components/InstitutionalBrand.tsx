@@ -5,7 +5,14 @@ interface InstitutionalBrandProps {
   schoolName?: string;
   variant?: 'light' | 'dark';
   compact?: boolean;
+  /** A partir de que largura mostrar o nome completo (cabeçalhos com muitos botões usam 'xl') */
+  fullFrom?: 'sm' | 'lg' | 'xl';
 }
+
+// Classes literais para o Tailwind encontrar
+const SHORT_CLASS = { sm: 'sm:hidden', lg: 'lg:hidden', xl: 'xl:hidden' } as const;
+const FULL_CLASS = { sm: 'hidden sm:inline', lg: 'hidden lg:inline', xl: 'hidden xl:inline' } as const;
+const TAG_CLASS = { sm: 'hidden md:inline-block', lg: 'hidden lg:inline-block', xl: 'hidden xl:inline-block' } as const;
 
 /**
  * Renderiza a Marca Oficial Original do SENAI-SP com o logotipo autêntico
@@ -16,6 +23,7 @@ export const InstitutionalBrand: React.FC<InstitutionalBrandProps> = ({
   schoolName = 'Escola SENAI "Morvan Figueiredo"',
   variant = 'dark',
   compact = false,
+  fullFrom = 'sm',
 }) => {
   const [logoLoadError, setLogoLoadError] = useState(false);
 
@@ -50,15 +58,15 @@ export const InstitutionalBrand: React.FC<InstitutionalBrandProps> = ({
       <div className="flex flex-col justify-center border-l border-slate-300/80 pl-2 sm:pl-3 leading-tight min-w-0">
         <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
           <span
-            className={`font-display font-bold tracking-tight truncate ${
+            className={`font-display font-bold tracking-tight truncate whitespace-nowrap ${
               compact ? 'text-xs sm:text-sm' : 'text-xs sm:text-sm md:text-base'
             } ${isLightText ? 'text-white' : 'text-[#1E293B]'}`}
           >
-            <span className="sm:hidden">SENAI Mooca</span>
-            <span className="hidden sm:inline">{schoolName}</span>
+            <span className={SHORT_CLASS[fullFrom]}>SENAI Mooca</span>
+            <span className={FULL_CLASS[fullFrom]}>{schoolName}</span>
           </span>
           <span
-            className={`hidden md:inline-block text-[10px] font-bold px-1.5 py-0.5 rounded ${
+            className={`${TAG_CLASS[fullFrom]} shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ${
               isLightText
                 ? 'bg-white/20 text-white'
                 : 'bg-red-50 text-[#E30613] border border-red-200'
@@ -68,12 +76,12 @@ export const InstitutionalBrand: React.FC<InstitutionalBrandProps> = ({
           </span>
         </div>
         <span
-          className={`font-bold tracking-wide uppercase text-[9px] sm:text-[10px] md:text-[11px] truncate ${
+          className={`font-bold tracking-wide uppercase text-[9px] sm:text-[10px] md:text-[11px] truncate whitespace-nowrap ${
             isLightText ? 'text-red-200' : 'text-[#E30613]'
           }`}
         >
-          <span className="sm:hidden">SIPAT 2026</span>
-          <span className="hidden sm:inline">SIPAT 2026 • 16 A 19 DE NOVEMBRO</span>
+          <span className={SHORT_CLASS[fullFrom]}>SIPAT 2026</span>
+          <span className={FULL_CLASS[fullFrom]}>SIPAT 2026 • 16 A 19 DE NOVEMBRO</span>
         </span>
       </div>
     </div>

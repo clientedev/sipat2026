@@ -417,6 +417,37 @@ async function runTests() {
     assert.equal(certPending.status, 200);
     assert.equal(certPending.data.released, false, 'Certificado só existe após liberação da coordenação');
 
+    // Regra: só recebe quem concluiu TODOS os desafios. Ainda faltam desafios -> recusado
+    const releaseEarly = await jsonReq(
+      '/api/admin/certificates/release',
+      { method: 'POST', body: JSON.stringify({ userIds: [studentId] }) },
+      adminToken
+    );
+    assert.equal(releaseEarly.status, 400, 'Certificado não pode ser liberado antes de concluir todos os desafios');
+
+    // Conclui os desafios restantes direto no banco (fora do escopo deste bloco)
+    const student = await prisma.user.findUniqueOrThrow({ where: { id: studentId } });
+    const allMissions = await prisma.mission.findMany({
+      where: { status: { not: 'DRAFT' } },
+      include: { targetClassGroups: true },
+    });
+    for (const m of allMissions) {
+      if (m.targetClassGroups.length && !m.targetClassGroups.some((t) => t.classGroupId === student.classGroupId)) continue;
+      await prisma.missionSubmission.upsert({
+        where: { missionId_userId: { missionId: m.id, userId: studentId } },
+        update: { status: 'APPROVED' },
+        create: { missionId: m.id, userId: studentId, status: 'APPROVED', textResponse: 'E2E', evaluatedAt: new Date() },
+      });
+    }
+    for (const q of await prisma.quiz.findMany({ where: { status: { not: 'DRAFT' } } })) {
+      const done = await prisma.quizAttempt.findFirst({ where: { quizId: q.id, userId: studentId, completedAt: { not: null } } });
+      if (!done) {
+        await prisma.quizAttempt.create({
+          data: { quizId: q.id, userId: studentId, attemptNumber: 1, answersJson: {}, completedAt: new Date() },
+        });
+      }
+    }
+
     const release = await jsonReq(
       '/api/admin/certificates/release',
       { method: 'POST', body: JSON.stringify({ userIds: [studentId] }) },

@@ -106,6 +106,17 @@ interface DashboardResponse {
     createdAt: string;
   }>;
   unreadNotificationsCount: number;
+  certificateStatus: {
+    requiredMissions: number;
+    doneMissions: number;
+    requiredQuizzes: number;
+    doneQuizzes: number;
+    totalRequired: number;
+    totalDone: number;
+    progressPercent: number;
+    isComplete: boolean;
+    released: boolean;
+  };
 }
 
 type MainTab = 'feed' | 'activities' | 'ranking' | 'profile';
@@ -481,22 +492,48 @@ export const ParticipantAppPage: React.FC = () => {
         </details>
       </section>
 
-      <section className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-        <button
-          type="button"
-          onClick={handleOpenCertificate}
-          className="w-full flex items-center gap-3 p-4 hover:bg-amber-50/50 text-left cursor-pointer"
-        >
-          <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-            <GraduationCap size={20} />
+      {/* Certificado: só aparece para emissão quando o aluno concluiu TODOS os desafios */}
+      {data.certificateStatus.isComplete || data.certificateStatus.released ? (
+        <section className="bg-white border border-amber-300 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={handleOpenCertificate}
+            className="w-full flex items-center gap-3 p-4 hover:bg-amber-50/50 text-left cursor-pointer"
+          >
+            <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+              <GraduationCap size={20} />
+            </div>
+            <div className="flex-1">
+              <div className="font-bold text-sm text-[#1E293B]">
+                {data.certificateStatus.released ? 'Emitir certificado (20h)' : 'Todos os desafios concluídos!'}
+              </div>
+              <div className="text-xs text-slate-500">
+                {data.certificateStatus.released
+                  ? 'Liberado pela coordenação. Toque para ver e baixar.'
+                  : 'Aguardando a coordenação liberar o seu certificado.'}
+              </div>
+            </div>
+            <Award size={18} className="text-amber-600" />
+          </button>
+        </section>
+      ) : (
+        <section className="bg-white border border-slate-200 rounded-xl p-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-bold text-[#1E293B]">Desafios concluídos</span>
+            <span className="font-mono-tech font-bold text-[#E30613]">
+              {data.certificateStatus.totalDone}/{data.certificateStatus.totalRequired}
+            </span>
           </div>
-          <div className="flex-1">
-            <div className="font-bold text-sm text-[#1E293B]">Certificado SIPAT (20h)</div>
-            <div className="text-xs text-slate-500">Liberado pela coordenação ao fim do evento. Toque para ver o status.</div>
+          <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden mt-2">
+            <div className="h-full bg-[#E30613]" style={{ width: `${data.certificateStatus.progressPercent}%` }} />
           </div>
-          <Award size={18} className="text-amber-600" />
-        </button>
-      </section>
+          <p className="text-xs text-slate-500 mt-2">
+            Missões {data.certificateStatus.doneMissions}/{data.certificateStatus.requiredMissions} • Quizzes{' '}
+            {data.certificateStatus.doneQuizzes}/{data.certificateStatus.requiredQuizzes}. O certificado de 20h fica
+            disponível quando você concluir todos.
+          </p>
+        </section>
+      )}
 
       <details className="bg-white border border-slate-200 rounded-xl p-4">
         <summary className="font-bold text-sm text-[#1E293B] cursor-pointer">Extrato de pontos</summary>
@@ -606,14 +643,15 @@ export const ParticipantAppPage: React.FC = () => {
       {/* Barra superior */}
       <header className="bg-[#1E293B] text-white border-b-4 border-[#E30613] sticky top-0 z-30 shadow-xs">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
-          <button type="button" onClick={() => goTo('feed')} className="shrink-0 min-w-0 cursor-pointer">
-            <InstitutionalBrand officialLogoUrl={publicConfig?.officialLogoUrl} schoolName={publicConfig?.schoolName} variant="light" compact />
+          <button type="button" onClick={() => goTo('feed')} className="min-w-0 cursor-pointer">
+            <InstitutionalBrand officialLogoUrl={publicConfig?.officialLogoUrl} schoolName={publicConfig?.schoolName} variant="light" compact fullFrom="xl" />
           </button>
 
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1 whitespace-nowrap shrink-0">
             {navItems.map((n) => (
               <button
                 key={n.id}
+                title={n.label}
                 type="button"
                 onClick={() => goTo(n.id)}
                 className={`relative px-3 py-1.5 rounded text-sm font-semibold flex items-center gap-1.5 cursor-pointer ${
@@ -621,7 +659,7 @@ export const ParticipantAppPage: React.FC = () => {
                 }`}
               >
                 {n.icon}
-                {n.label}
+                <span className="hidden xl:inline">{n.label}</span>
                 {!!n.badge && (
                   <span className="bg-[#E30613] text-white text-[10px] font-bold rounded-full px-1.5">{n.badge}</span>
                 )}

@@ -72,3 +72,9 @@
   scrollbar-width: none;
 }
 
+
+/* Itens de grid não podem ser esticados por textos longos (nomes, URLs, barras roláveis):
+   sem isso, colunas "truncate" empurram a página para fora da tela no celular */
+.grid > * {
+  min-width: 0;
+}

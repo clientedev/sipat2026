@@ -99,10 +99,11 @@ export const PublicOverviewPage: React.FC = () => {
             officialLogoUrl={data?.officialLogoUrl ? '/api/media/brand' : null}
             schoolName={data?.schoolName || 'Escola SENAI "Morvan Figueiredo"'}
             variant="light"
+            fullFrom="lg"
           />
 
-          <div className="flex items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded text-xs font-mono-tech">
+          <div className="flex items-center gap-3 whitespace-nowrap">
+            <span className="hidden xl:inline-flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded text-xs font-mono-tech">
               <Radio size={14} className="text-[#FFB800]" />
               <span>PAINEL PÚBLICO DE ACOMPANHAMENTO</span>
             </span>

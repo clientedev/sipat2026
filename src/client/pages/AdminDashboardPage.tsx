@@ -122,15 +122,16 @@ export const AdminDashboardPage: React.FC = () => {
       <header className="bg-[#1E293B] text-white border-b-4 border-[#E30613] shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <Link to="/" className="shrink-0 min-w-0">
+            <Link to="/" className="min-w-0">
               <InstitutionalBrand
                 officialLogoUrl={publicConfig?.officialLogoUrl}
                 schoolName={publicConfig?.schoolName}
                 variant="light"
                 compact
+                fullFrom="xl"
               />
             </Link>
-            <span className="hidden md:inline-flex items-center gap-1.5 bg-[#E30613] text-white text-[11px] font-mono-tech font-bold px-2.5 py-1 rounded shrink-0">
+            <span className="hidden lg:inline-flex items-center gap-1.5 bg-[#E30613] text-white text-[11px] font-mono-tech font-bold px-2.5 py-1 rounded shrink-0">
               <Shield size={12} className="text-[#FFB800]" />
               <span>
                 {user?.role === 'SUPER_ADMIN'
@@ -151,7 +152,7 @@ export const AdminDashboardPage: React.FC = () => {
               title="Baixar Manual Oficial em PDF com prints do sistema"
             >
               <BookOpen size={14} />
-              <span>Manual PDF</span>
+              <span className="hidden lg:inline">Manual PDF</span>
             </a>
             <Link
               to="/ranking"

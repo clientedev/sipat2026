@@ -151,14 +151,16 @@ export const AdminCertificatesTab: React.FC = () => {
     try {
       setProcessing(true);
       setStatusMsg(null);
-      const res = await apiFetch<{ ok: boolean; releasedCount: number }>('/api/admin/certificates/release', {
+      const res = await apiFetch<{ ok: boolean; releasedCount: number; skippedIncomplete?: number }>('/api/admin/certificates/release', {
         method: 'POST',
         body: JSON.stringify({ userIds: ids }),
       });
 
       setStatusMsg({
         type: 'success',
-        text: `🎓 Sucesso! ${res.releasedCount} certificado(s) homologado(s) e liberado(s) oficialmente!`,
+        text: `🎓 ${res.releasedCount} certificado(s) liberado(s).${
+          res.skippedIncomplete ? ` ${res.skippedIncomplete} aluno(s) ignorado(s) por não terem concluído todos os desafios.` : ''
+        }`,
       });
       setSelectedIds(new Set());
       await loadData();
@@ -346,7 +348,7 @@ export const AdminCertificatesTab: React.FC = () => {
               <span>Aptos / Elegíveis</span>
             </div>
             <div className="text-2xl font-black text-blue-600 mt-1">{summary.eligibleCount}</div>
-            <div className="text-[10px] text-blue-600/80 mt-0.5">Com atividades concluídas</div>
+            <div className="text-[10px] text-blue-600/80 mt-0.5">Concluíram todos os desafios</div>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs border-t-2 border-t-purple-500 col-span-2 sm:col-span-1">
@@ -612,7 +614,7 @@ export const AdminCertificatesTab: React.FC = () => {
                               <span>APTO PARA DISPARO</span>
                             </span>
                             <div className="text-[10px] text-slate-400 mt-0.5">
-                              Critérios cumpridos
+                              Concluiu todos os desafios
                             </div>
                           </div>
                         ) : (
@@ -621,7 +623,7 @@ export const AdminCertificatesTab: React.FC = () => {
                               <span>Em andamento</span>
                             </span>
                             <div className="text-[10px] text-slate-400 mt-0.5">
-                              Progresso inicial
+                              {c.approvedMissions + c.completedQuizzes} de {c.totalMissionsCount + c.totalQuizzesCount} desafios
                             </div>
                           </div>
                         )}
